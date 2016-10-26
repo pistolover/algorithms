@@ -1,0 +1,82 @@
+package future.java;
+
+import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+public class TestFuture2 {
+    // 创建线程池
+    final static ExecutorService service = Executors.newCachedThreadPool();
+
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
+        Long t1 = System.currentTimeMillis();
+        // 任务1
+        getIntegerTask();
+
+        // 任务2
+        getStringTask();
+
+        // 任务3
+        getBooleanTask();
+
+        // 执行时间
+        System.err.println("time: " + (System.currentTimeMillis() - t1));
+    }
+
+    private static void getBooleanTask() throws InterruptedException, ExecutionException {
+        Thread.sleep(500);
+        Future<Boolean> booleanTask = service.submit(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return true;
+            }
+        });
+
+        while (true) {
+            if (booleanTask.isDone() && !booleanTask.isCancelled()) {
+                // 模拟耗时
+                Boolean result = booleanTask.get();
+                System.err.println("BooleanTask: " + result);
+                break;
+            }
+        }
+    }
+
+    private static void getStringTask() throws InterruptedException, ExecutionException {
+        Future<String> stringTask = service.submit(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return "Hello World";
+            }
+        });
+
+        while (true) {
+            if (stringTask.isDone() && !stringTask.isCancelled()) {
+                String result = stringTask.get();
+                System.err.println("StringTask: " + result);
+                break;
+            }
+        }
+    }
+
+    private static void getIntegerTask() throws InterruptedException, ExecutionException {
+        Future<Integer> integerTask = service.submit(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                return new Random().nextInt(100);
+            }
+        });
+
+        while (true) {
+            if (integerTask.isDone() && !integerTask.isCancelled()) {
+                Integer result = integerTask.get();
+                System.err.println("IntegerTask: " + result);
+                break;
+            }
+        }
+    }
+
+}

@@ -1,0 +1,885 @@
+**********************************************************************************************************************
+IO包中的2种设计模式 装饰者模式和适配器
+InputStream--FilterInputStream--BufferedInputSteam
+InputSteam--FileInputStream
+          --byteArrayInputStream
+          --InputStreamReader
+          
+**********************************************************************************************************************
+集合类 iterator -- collection--set---list          map---abstractmap
+
+set--hashset 实质是一个hashMap LinkedHashSet 实质是一个linkedHashMap 其key是一个链表
+list--arraylist 实质是一个数组 是有序的 LinkedList 双向链表  vector 线程安全的
+map--hashMap 线程不安全的 LinkedHashMap继承了hashmap 其中的entry是有前驱和后继的
+
+hashtable 线程安全 多线程情况下回导致效率比较低
+
+concurrentHashMap 锁机制----- 允许多个读写操作并发执行
+多线程条件下使用多线程会导致hashMap的put操作死循环，可以使用hashTable但是会出现效率低下，
+使用分段锁技术，将数据分成一段一段的存储，然后每一段加上一把锁，当其中一个线程占用锁访问其中的一个段数据的时候，
+其它段的数据也是可以访问的，实现真正的并发。
+
+concurrentHashMap----多个segMent---每个segMent中包含若干EntrySet
+需要进过3次hash来确定具体的值
+jdk 1.8中进行了修改。
+
+put方法中加了锁机制。
+锁分离机制：使用Segment extends ReentrantLock
+
+HashMap的put方法
+首先根据key去hash一次找到该key在数组中的位置，然后根据hash后的值在数组中寻找，如果找到的节点为空就说明没有节点，直接将该节点放入即可，
+如果找到节点，说明找到了一个链表，就判断链表第一个节点是否和新增的节点hash值和equals都相等，如果相等则直接覆盖，否则，如果节点是一个TreeNode类型，
+则直接放入红黑树中；否则，则默认是链表存储，在链表中头往后寻找，如果其中发现节点的next节点为空，则将next节点设为当前节点，
+如果节点数量大于阈值8，则将链表转换为红黑树，如果发现遍历的节点和当前节点完全一样，则直接终止寻找。
+更新hash值和key值相同的旧的值。
+最后还需判断是否需要resize，容量增加一倍，需要重新进行hash。
+
+
+**********************************************************************************************************************
+异常机制  throwable-- error 、exception
+error错误
+exception包括runtimeException和受检查的异常
+
+IOException FileNotFoundException
+
+1.try：它里面放置可能引发异常的代码
+2.catch：后面对应异常类型和一个代码块，用于表明该catch块用于处理这种类型的代码块，可以有多个catch块。
+3.finally：主要用于回收在try块里打开的物力资源（如数据库连接、网络连接和磁盘文件），异常机制总是保证finally块总是被执行。只有finally块，执行完成之后，才会回来执行try或者catch块中的return或者throw语句，如果finally中使用了return或者   throw等终止方法的语句，则就不会跳回执行，直接停止。
+4.throw：用于抛出一个实际的异常，可以单独作为语句使用，抛出一个具体的异常对象。
+5.throws：用在方法签名中，用于声明该方法可能抛出的异常。
+
+执行步骤：
+
+1.如果执行try块中的业务逻辑代码时出现异常，系统自动生成一个异常对象，该异常对象被提交给java运行环境，这个过程称为抛出（throw）异常。
+
+2.当java运行环境收到异常对象时，会寻找能处理该异常对象的catch块，如果找到合适的cathc块并把该异常对象交给catch块处理，那这个过程称为捕获（catch）异常；如果java运行时环境找不到捕获异常的catch块，则运行时环境终止，jav程序也将退出。
+
+注意1：不管程序代码块是否处于try块中，甚至包括catch块中代码，只要执行该代码时出现了异常，系统都会自动生成一个异常对象，如果程序没有为这段代码定义任何catch块，java运行环境肯定找不到处理该异常的catch块，程序肯定在此退出。
+
+注意2：try块后可以有多个catch块，try块后使用多个catch块是为了针对不同异常类提供的不同的异常处理方式。当系统发生不同意外情况时，系统会生成不同的异常对象，java运行时就会根据该异常对象所属的异常类来决定使用哪个catch块来处理该异常。
+
+注意3：通常情况下，如果try块被执行一次，则try块后只有一个catch块会被执行，绝不可能有多个catch块被执行，除非在循环中使用类continue开始下一次循环，下一次循环又重新运行了try块，这才可能导致多个catch块被执行。
+
+注意4：进行异常捕获时，一定要记住先捕获小的异常，再捕获大的异常。
+
+
+
+
+**********************************************************************************************************************
+类加载机制：
+怎么加载类？
+哪些类需要加载？
+加载顺序是什么样的？
+1、寻找jre目录，寻找jvm.dll，并初始化JVM；
+2、产生一个Bootstrap Loader（启动类加载器）；
+3、Bootstrap Loader自动加载Extended Loader（标准扩展类加载器），并将其父Loader设为Bootstrap Loader。
+4、Bootstrap Loader自动加载AppClass Loader（系统类加载器），并将其父Loader设为Extended Loader。
+5、最后由AppClass Loader加载HelloWorld类。
+
+bootstrapLoader-->appLoader-->extLoader
+
+
+类从被加载到虚拟机内存中开始，到卸载出内存为止，它的整个生命周期包括：加载、验证、准备、解析、初始化、使用和卸载七个阶段。
+(a)加载：时类加载过程的第一个阶段，在加载阶段，虚拟机需要完成以下三件事情：
+    1、通过一个类的全限定名来获取其定义的二进制字节流。
+    2、将这个字节流所代表的静态存储结构转化为方法区的运行时数据结构。
+    3、在Java堆中生成一个代表这个类的java.lang.Class对象，作为对方法区中这些数据的访问入口。
+启动类加载器-->扩展类加载器-->应用程序类加载器-->自定义类加载器
+双亲委派模型的工作流程是：如果一个类加载器收到了类加载的请求，它首先不会自己去尝试加载这个类，而是把请求委托给父加载器去完成，依次向上，
+因此，所有的类加载请求最终都应该被传递到顶层的启动类加载器中，只有当父加载器在它的搜索范围中没有找到所需的类时，即无法完成该加载，子加载器才会尝试自己去加载该类。
+(b)验证：的目的是为了确保Class文件中的字节流包含的信息符合当前虚拟机的要求，而且不会危害虚拟机自身的安全。
+不同的虚拟机对类验证的实现可能会有所不同，但大致都会完成以下四个阶段的验证：文件格式的验证、元数据的验证、字节码验证和符号引用验证
+(c)准备：准备阶段是正式为类变量分配内存并设置类变量初始值的阶段，这些内存都将在方法区中分配。对于该阶段有以下几点需要注意：
+    1、这时候进行内存分配的仅包括类变量（static），而不包括实例变量，实例变量会在对象实例化时随着对象一块分配在Java堆中。
+    2、这里所设置的初始值通常情况下是数据类型默认的零值（如0、0L、null、false等），而不是被在Java代码中被显式地赋予的值。
+(d)解析：解析阶段是虚拟机将常量池中的符号引用转化为直接引用的过程。在Class类文件结构一文中已经比较过了符号引用和直接引用的区别和关联，这里不再赘述。
+前面说解析阶段可能开始于初始化之前，也可能在初始化之后开始，虚拟机会根据需要来判断，到底是在类被加载器加载时就对常量池中的符号引用进行解析（初始化之前），还是等到一个符号引用将要被使用前才去解析它（初始化之后）。
+对同一个符号引用进行多次解析请求时很常见的事情，虚拟机实现可能会对第一次解析的结果进行缓存（在运行时常量池中记录直接引用，并把常量标示为已解析状态），从而避免解析动作重复进行。
+(e)初始化：初始化是类加载过程的最后一步，到了此阶段，才真正开始执行类中定义的Java程序代码。在准备阶段，类变量已经被赋过一次系统要求的初始值，而在初始化阶段，
+则是根据程序员通过程序指定的主观计划去初始化类变量和其他资源，或者可以从另一个角度来表达：初始化阶段是执行类构造器<clinit>()方法的过程。
+(f)使用：
+(g)卸载：
+整个类加载过程中，除了在加载阶段用户应用程序可以自定义类加载器参与之外，其余所有的动作完全由虚拟机主导和控制。到了初始化才开始执行类中定义的Java程序代码（亦及字节码）
+，但这里的执行代码只是个开端，它仅限于<clinit>（）方法。类加载过程中主要是将Class文件（准确地讲，应该是类的二进制字节流）加载到虚拟机内存中，真正执行字节码的操作，在加载完成后才真正开始。
+**********************************************************************************************************************
+JVM内存管理 怎么管理？
+堆:公共区域 存储对象
+栈：线程私有
+本地方法栈：native方法的调用
+程序计数器：线程私有，线程切换回到正确的位置
+方法区：类加载信息 常量 静态变量 编译器编译后的代码
+
+**********************************************************************************************************************
+JVM垃圾回收机制 为什么分代？不同代回收机制、策略不通？ 算法也不同？
+哪些需要回收？什么时候回收？怎么回收？
+对象没有引用 未捕获的异常 执行完毕 System.exit() 意外终止
+
+判断对象已经死亡？引用计数但是可能会产生相互引用、是否可达分析
+回收算法：
+标记清除算法：标记存活对象，清除未标记的对象
+复制算法：存活对象放入一块区域，清除其余区域
+标记整理：标记存活对象并进行整理，然后清除没有标记的对象，减少碎片空间
+分代收集：年轻代、年老代
+标记清除
+
+minor gc 年轻代 速度快 执行频率高
+full gc 年老代 速度慢 耗时 
+
+串行垃圾回收：单线程、清理时会停止所有的工作 复制 
+并行垃圾回收：多线程 标记整理 标记清除 
+对于年轻代来说，分为Eden和两个Survivor区域，其中比例一般为8：1：1    年轻代复制算法  没有碎片的产生
+对象优先会放在Eden中，如果Eden满了，再来的对象就会放入其中的一个survivor中，
+如果这一个满了的话 就会进行一次minior gc 将存活的对象放入另外一个 survivor中
+然后清除Eden和其中的一个survivor 另一个survivor中对象的年龄加1岁 默认到达
+15岁的时候就会移动到年老区
+对于大的对象可能直接就进入到老年区
+
+年轻代空间不足就会触发full gc ，年老代空间不足就会抛出异常
+Permanet Generation空间满
+Minor GC 后晋升到旧生代的平均大小大于旧生代的剩余空间
+
+将不用的对象设置为null
+使用对象池技术
+使用JVM参数进行调优
+
+年轻代 年老代 持久代
+年轻代朝生夕灭
+
+Young：主要是用来存放新生的对象。
+
+Old：主要存放应用程序中生命周期长的内存对象。
+
+Permanent：是指内存的永久保存区域，主要存放Class和Meta的信息,Class在被 Load的时候被放入PermGen space区域. 
+它和和存放Instance的Heap区域不同,GC(Garbage Collection)不会在主程序运行期对PermGen space进行清理，所以如果你的APP会LOAD很多CLASS的话,就很可能出现PermGen space错误。
+
+**********************************************************************************************************************
+设计模式：观察者、代理、策略、装饰者、适配器、门面、抽象工厂、工厂、单例
+观察者是一个一对多的关系，通知方发生改变时会通知收听方。
+代理模式目标对象要做的事让代理对象来做，需要实现相同的接口。
+策略模式是有多种不同的算法，依据不同的策略跳转不同的方法中去，比如会员的服务，分为一般用户、普通会员、高级会员等
+装饰者模式是接接受一个相同的高层接口，动态扩展类的功能。
+适配器模式使得不能适配的对象可以变得通用，将一个接口转换为另一个期望的接口，比如FileInputStream接收一个String类型的路径返回.
+门面模式：构建客户端可多个子系统之间的桥接关系，提供一个接口来访问子系统中的一群接口
+
+创建者模式：StringBuilder
+原型模式：使用自己的实例来创建另一个实例 clone方法
+享元模式：有效地存储大量小对象 Integer.valueOf()
+迭代器模式：对象遍历 Iterator
+Template(模板):定义一个操作中算法的骨架,将一些步骤的执行延迟到其子类中 InputStream中的skip() read()
+
+**********************************************************************************************************************
+concurrent中代码学习 为什么使用线程池？如何使用？ 减少线程创建销毁  redis单线程？
+线程池使得线程可以重复使用，创建线程和销毁线程是很消耗资源的。
+Executor -->ExecutorService--->AbstractExecutorService-->ThreadPoolExecutor
+Executor:execute()
+ExecutorService:submit()
+AbstractExecutorService:提供默认实现
+ThreadPoolExecutor：具体的线程池
+主要包含：
+BlockingQueue<Runnable> workQueue 工作等待队列
+HashSet<Worker> workers 工作空间 装了待执行的线程 最后运行的是这里面的线程
+Worker ：AQS需要看下
+
+
+------AQS-------
+reentrantlock的优点
+可以添加多个检控条件, 如果使用synchronized,则只能使用一个. 使用 reentrant locks 可以有多个wait()/notify() 队列. 
+[译注:直接多new 几个ReentrantLock就可以了,不同的场景/条件用不同的ReentrantLock ]
+可以控制线程得到锁的顺序,也就是有公平锁(按照进入顺序得到资源),也可以不按照顺就像.synchronized 一样.
+可以查看锁的状态, 锁是否被锁上了.
+可以查看当前有多少线程再等待锁.
+
+
+1、ReentrantLock可以实现fair lock 
+ 
+public ReentrantLock(boolean fair) {   
+    sync = (fair)? new FairSync() : new NonfairSync();  
+}  
+所谓fair lock就是看获得锁的顺序是不是和申请锁的时间的顺序是一致的 
+ 
+2、ReentrantLock支持中断处理 
+ 
+public final void acquireInterruptibly(int arg) throws InterruptedException {  
+    if (Thread.interrupted())  
+        throw new InterruptedException();  
+    if (!tryAcquire(arg))  
+        doAcquireInterruptibly(arg);  
+}  
+就是说那些持有锁的线程一直不释放，正在等待的线程可以放弃等待。 
+ 
+3、ReentrantLock可以和condition结合使用 
+ 
+public boolean hasWaiters(Condition condition) {  
+    if (condition == null)  
+        throw new NullPointerException();  
+    if (!(condition instanceof AbstractQueuedSynchronizer.ConditionObject))  
+        throw new IllegalArgumentException("not owner");  
+    return sync.hasWaiters((AbstractQueuedSynchronizer.ConditionObject)condition);  
+}  
+ 
+public int getWaitQueueLength(Condition condition) {  
+    if (condition == null)  
+        throw new NullPointerException();  
+    if (!(condition instanceof AbstractQueuedSynchronizer.ConditionObject))  
+        throw new IllegalArgumentException("not owner");  
+    return sync.getWaitQueueLength((AbstractQueuedSynchronizer.ConditionObject)condition);  
+}  
+
+
+ 
+reentrantlock的缺点
+需要使用import 引入相关的Class
+不能忘记在finally 模块释放锁,这个看起来比synchronized 丑陋
+synchronized可以放在方法的定义里面, 而reentrantlock只能放在块里面. 比较起来, synchronized可以减少嵌套
+
+reentrantlock实质是使用了Sync抽象类，Sync类继承了AQS，Sync是实现类NonfairSync和FairSync类。
+主要是使用reentrantlock的lock方法和unlock方法，reentrantlock初始化会默认创建一个非公平的NonfairSync锁。
+
+ReentrantLock在采用非公平锁构造时，首先检查锁状态，如果锁可用，直接通过CAS设置成持有状态，且把当前线程设置为锁的拥有者。
+如果当前锁已经被持有，那么接下来进行可重入检查，如果可重入，需要为锁状态加上请求数。如果不属于上面两种情况，那么说明锁是被其他线程持有，
+当前线程应该放入等待队列。
+
+##原理
+在放入等待队列的过程中，首先要检查队列是否为空队列，如果为空队列，需要创建虚拟的头节点，然后把对当前线程封装的节点加入到队列尾部。
+由于设置尾部节点采用了CAS，为了保证尾节点能够设置成功，这里采用了无限循环的方式，直到设置成功为止。
+在完成放入等待队列任务后，则需要维护节点的状态，以及及时清除处于Cancel状态的节点，以帮助垃圾收集器及时回收。
+如果当前节点之前的节点的等待状态小于1，说明当前节点之前的线程处于等待状态(挂起)，那么当前节点的线程也应处于等待状态(挂起)。
+挂起的工作是由LockSupport类支持的，LockSupport通过JNI调用本地操作系统来完成挂起的任务(java中除了废弃的suspend等方法，没有其他的挂起操作)。
+在当前等待的线程，被唤起后，检查中断状态，如果处于中断状态，那么需要中断当前线程。
+**********************************************************************************************************************
+ public ThreadPoolExecutor(int corePoolSize,
+                              int maximumPoolSize,
+                              long keepAliveTime,
+                              TimeUnit unit,
+                              BlockingQueue<Runnable> workQueue,
+                              ThreadFactory threadFactory,
+                              RejectedExecutionHandler handler) {
+
+核心池数：线程池初始容量，线程池创建开始其中是没有线程的
+线程池大小最大线程数：线程池最大容量
+存活时间：存活多长时间灭亡
+时间单位：是小时、分、秒
+工作队列：待执行的任务会放入工作队列
+threadFactory the factory to use when the executor creates a new thread  当一个线程池创建一个线程时会用到线程工厂
+拒绝策略
+
+**********************************************************************************************************************
+ThreadPoolExecutor线程池详解：
+
+AtomicInteger是干什么用的，高并发情况下保证多线程修改数值的正确性。具有自增自减功能。
+并不是因为volatile，是因为unsafe
+
+CAS的语义是“我认为V的值应该为A，如果是，那么将V的值更新为B，否则不修改并告诉V的值实际为多少”，CAS是项 乐观锁 技术，
+当多个线程尝试使用CAS同时更新同一个变量时，只有其中一个线程能更新变量的值，而其它线程都失败，失败的线程并不会被挂起，
+而是被告知这次竞争中失败，并可以再次尝试。CAS有3个操作数，内存值V，旧的预期值A，要修改的新值B。
+当且仅当预期值A和内存值V相同时，将内存值V修改为B，否则什么都不做。CAS无锁算法的C实现如下：
+
+int compare_and_swap (int* reg, int oldval, int newval) 
+{
+  ATOMIC();
+  int old_reg_val = *reg;
+  if (old_reg_val == oldval) 
+     *reg = newval;
+  END_ATOMIC();
+  return old_reg_val;
+}
+
+线程的演变：
+单线程-->多线程-->线程池-->工作队列
+单线程只能够顺序执行任务，多线程不受限制创建可能导致服务器资源枯竭，线程池可是创建少量的线程来不停处理请求，
+请求处理完成后线程被回收到线程池中，但是当线程池中的线程都在工作时，新来一个线程怎么办呢。这里就需要用到工作队列，
+工作队列中保存排队的任务，如果队列满了，新来的任务则需要进行策略上的判断，抛异常或者直接舍弃。
+
+**********************************************************************************************************************
+guava future学习  异步非阻塞调用
+
+future-->ListenableFuture-->AbstractFuture
+
+Future普通的Future,异步计算结果
+
+ListenableFuture 增加回调功能
+
+AbstractFuture 抽象的Future
+
+  public void addListener(Runnable listener, Executor exec) {
+    executionList.add(listener, exec);
+  }
+  对指定任务增加监听
+
+    private final Sync<V> sync = new Sync<V>();
+
+    // The execution list to hold our executors.
+     private final ExecutionList executionList = new ExecutionList();
+ExecutionList
+     private RunnableExecutorPair runnables;
+RunnableExecutorPair
+     final Runnable runnable;
+     final Executor executor;
+实质是一个链表，保存了当前执行的任务和线程池。执行时候需要将链表翻转，然后一个一个地执行。
+
+Executor -->ExecutorService--->AbstractExecutorService-->ThreadPoolExecutor
+
+abstract class AbstractListeningExecutorService extends AbstractExecutorService implements ListeningExecutorService 
+
+Executor-->ExecutorService-->ListeningExecutorService-->AbstractListeningExecutorService-->ListeningDecorator
+
+  public static ListeningExecutorService listeningDecorator(
+      ExecutorService delegate) {
+    return new ListeningDecorator(delegate);
+  }
+
+
+1、线程池刚创建时，里面没有一个线程。任务队列是作为参数传进来的。不过，就算队列里面有任务，线程池也不会马上执行它们。
+2、当调用 execute() 方法添加一个任务时，线程池会做如下判断：
+    a. 如果正在运行的线程数量小于 corePoolSize，那么马上创建线程运行这个任务；
+    b. 如果正在运行的线程数量大于或等于 corePoolSize，那么将这个任务放入队列。
+    c. 如果这时候队列满了，而且正在运行的线程数量小于 maximumPoolSize，那么还是要创建线程运行这个任务；
+    d. 如果队列满了，而且正在运行的线程数量大于或等于 maximumPoolSize，那么线程池会抛出异常，告诉调用者“我不能再接受任务了”。
+3、当一个线程完成任务时，它会从队列中取下一个任务来执行。
+4、当一个线程无事可做，超过一定的时间（keepAliveTime）时，线程池会判断，如果当前运行的线程数大于 corePoolSize，那么这个线程就被停掉。所以线程池的所有任务完成后，它最终会收缩到 corePoolSize 的大小。
+       这个过程说明，并不是先加入任务就一定会先执行。假设队列大小为 4，corePoolSize为2，maximumPoolSize为6，那么当加入15个任务时，执行的顺序类似这样：首先执行任务 1、2，然后任务3~6被放入队列。
+       这时候队列满了，任务7、8、9、10 会被马上执行，而任务 11~15 则会抛出异常。最终顺序是：1、2、7、8、9、10、3、4、5、6。
+       当然这个过程是针对指定大小的ArrayBlockingQueue<Runnable>来说，如果是LinkedBlockingQueue<Runnable>，因为该队列无大小限制，所以不存在上述问题。
+
+
+**********************************************************************************************************************
+
+
+**********************************************************************************************************************
+asyncRestTemplate异步批量调用小框架
+自动化API文档结构及思考 用到的技术：IO、模式
+
+**********************************************************************************************************************
+数据结构和算法  七大排序算法、KMP字符串算法、二分查找、栈、队列、树、二叉树、最短路径、动态规划、桶排序
+冒泡排序：
+希尔排序：
+插入排序：
+快速排序：
+堆排序：
+归并排序：
+
+**********************************************************************************************************************
+ObjectMapper反序列化Deserializer 自定义反序列化
+ObjectMapper反序列化的思想：
+    JsonDeserializer抽象类是关键，其中不同的类型会分发到对应的JsonDeserializer中进行处理，包括基本类型，集合，字符串等的处理。
+    ObjectMapper的反序列化实质是构建一个游标，从字符串的开始位置往后移动，通过对'{' '[' '"' 的判断跳转到相应的JsonDeserializer中进行处理
+    处理完成后返回结果。
+**********************************************************************************************************************
+NIO学习 为什么使用NIO
+结合netty框架的学习
+
+缓冲区:buffer
+通道:channel
+选择器:slector
+
+      传统流I/O是基于字节的，所有I/O都被视为单个字节的移动；而NIO是基于块的，大家可能猜到了，NIO的性能肯定优于流I/O。
+      没错！其性能的提高要得益于其使用的结构更接近操作系统执行I/O的方式：通道和缓冲器。我们可以把它想象成一个煤矿，通道是一个包含煤层（数据）的矿藏，
+      而缓冲器则是派送到矿藏的卡车。卡车载满煤炭而归，我们再从卡车上获得煤炭。也就是说，我们并没有直接和通道交互；我们只是和缓冲器交互，并把缓冲器派送到通道。
+      通道要么从缓冲器获得数据，要么向缓冲器发送数据。（这段比喻出自Java编程思想）
+
+
+Channels and Buffers（通道和缓冲区）：标准的IO基于字节流和字符流进行操作的，而NIO是基于通道（Channel）和缓冲区（Buffer）进行操作，数据总是从通道读取到缓冲区中，或者从缓冲区写入到通道中。
+Asynchronous IO（异步IO）：Java NIO可以让你异步的使用IO，例如：当线程从通道读取数据到缓冲区时，线程还是可以进行其他事情。当数据被写入到缓冲区时，线程可以继续处理它。从缓冲区写入通道也类似。
+Selectors（选择器）：Java NIO引入了选择器的概念，选择器用于监听多个通道的事件（比如：连接打开，数据到达）。因此，单个的线程可以监听多个数据通道。
+
+
+Channel 通道
+
+Buffer 缓冲区
+
+Selector 选择器
+
+其中Channel对应以前的流，Buffer不是什么新东西，Selector是因为nio可以使用异步的非堵塞模式才加入的东西。
+
+以前的流总是堵塞的，一个线程只要对它进行操作，其它操作就会被堵塞，也就相当于水管没有阀门，你伸手接水的时候，不管水到了没有，你就都只能耗在接水（流）上。
+
+nio的Channel的加入，相当于增加了水龙头（有阀门），虽然一个时刻也只能接一个水管的水，但依赖轮换策略，在水量不大的时候，各个水管里流出来的水，都可以得到妥善接纳，
+这个关键之处就是增加了一个接水工，也就是Selector，他负责协调，也就是看哪根水管有水了的话，在当前水管的水接到一定程度的时候，就切换一下：临时关上当前水龙头，试着打开另一个水龙头（看看有没有水）。
+
+当其他人需要用水的时候，不是直接去接水，而是事前提了一个水桶给接水工，这个水桶就是Buffer。也就是，其他人虽然也可能要等，但不会在现场等，而是回家等，可以做其它事去，水接满了，接水工会通知他们。
+
+这其实也是非常接近当前社会分工细化的现实，也是统分利用现有资源达到并发效果的一种很经济的手段，而不是动不动就来个并行处理，虽然那样是最简单的，但也是最浪费资源的方式。
+
+
+NIO 有一个主要的类Selector,这个类似一个观察者 ，只要我们把需要探知的 socketchannel告诉Selector,我们接着做别的事情，当有事件发生时，他会通知我们，
+传回一组SelectionKey,我们读取这些 Key,就会获得我们刚刚注册过的socketchannel,然后，我们从这个Channel中读取数据，放心，包准能够读到，接着我们可以处理这些数据。 
+Selector内部原理实际是在做一个对所注册的channel的轮询访问 ，不断的轮询(目前就这一个算法)，一旦轮询到一个channel有所注册的事情发生，比如数据来了，
+他就会站起来报告，交出一把钥匙，让我们通过这把钥匙（SelectionKey 表示 SelectableChannel 在 Selector 中的注册的标记。 ）来读取这个channel的内容。 
+
+通道
+Java NIO 的通道类似流，但又有些不同：
+既可以从通道中读取数据，又可以写数据到通道。但流的读写通常是单向的。
+通道可以异步地读写。
+通道中的数据总是要先读到一个 Buffer，或者总是要从一个 Buffer 中写入。
+这些是 Java NIO 中最重要的通道的实现：
+
+FileChannel
+DatagramChannel
+SocketChannel
+ServerSocketChannel
+FileChannel 从文件中读写数据。
+DatagramChannel 能通过 UDP 读写网络中的数据。
+SocketChannel 能通过 TCP 读写网络中的数据。
+ServerSocketChannel 可以监听新进来的 TCP 连接，像 Web 服务器那样。对每一个新进来的连接都会创建一个 SocketChannel。
+
+
+Buffer 的基本用法
+使用 Buffer 读写数据一般遵循以下四个步骤：
+写入数据到 Buffer
+调用flip()方法
+从 Buffer 中读取数据
+
+Java NIO 有以下 Buffer 类型
+ByteBuffer
+MappedByteBuffer
+CharBuffer
+DoubleBuffer
+FloatBuffer
+IntBuffer
+LongBuffer
+ShortBuffer
+
+
+面向流与面向缓冲
+Java NIO 和 IO 之间第一个最大的区别是，IO 是面向流的，NIO 是面向缓冲区的。
+ Java IO 面向流意味着每次从流中读一个或多个字节，直至读取所有字节，它们没有被缓存在任何地方。
+ 此外，它不能前后移动流中的数据。如果需要前后移动从流中读取的数据，需要先将它缓存到一个缓冲区。
+ Java NIO 的缓冲导向方法略有不同。数据读取到一个它稍后处理的缓冲区，需要时可在缓冲区中前后移动。
+ 这就增加了处理过程中的灵活性。但是，还需要检查是否该缓冲区中包含所有您需要处理的数据。
+ 而且，需确保当更多的数据读入缓冲区时，不要覆盖缓冲区里尚未处理的数据。
+
+阻塞与非阻塞 IO
+Java IO 的各种流是阻塞的。这意味着，当一个线程调用 read() 或 write() 时，
+该线程被阻塞，直到有一些数据被读取，或数据完全写入。该线程在此期间不能再干任何事情了。 
+Java NIO 的非阻塞模式，使一个线程从某通道发送请求读取数据，但是它仅能得到目前可用的数据，
+如果目前没有数据可用时，就什么都不会获取。而不是保持线程阻塞，所以直至数据变的可以读取之前，
+该线程可以继续做其他的事情。 非阻塞写也是如此。一个线程请求写入一些数据到某通道，
+但不需要等待它完全写入，这个线程同时可以去做别的事情。 
+线程通常将非阻塞 IO 的空闲时间用于在其它通道上执行 IO 操作，
+所以一个单独的线程现在可以管理多个输入和输出通道（channel）
+
+
+• Reactor 
+o 某个事件处理者宣称它对某个socket上的读事件很感兴趣; 
+o 事件分离者等着这个事件的发生; 
+o 当事件发生了，事件分离器被唤醒，这负责通知先前那个事件处理者; 
+o 事件处理者收到消息，于是去那个socket上读数据了. 如果需要，它再次宣称对这个socket上的读事件感兴趣，一直重复上面的步骤; 
+
+
+**********************************************************************************************************************
+Spring MVC中aop学习
+
+Spring源代码解析(一）：IOC容器:http://www.iteye.com/topic/86339 
+Spring源代码解析(二)：IoC容器在Web容器中的启动:http://www.iteye.com/topic/86594 
+Spring源代码解析(三）：Spring JDBC:http://www.iteye.com/topic/87034 
+Spring源代码解析(四）：Spring MVC:http://www.iteye.com/topic/87692 
+Spring源代码解析(五）：Spring AOP获取Proxy:http://www.iteye.com/topic/88187 
+Spring源代码解析(六）：Spring声明式事务处理:http://www.iteye.com/topic/88189 
+Spring源代码解析（七）：Spring AOP中对拦截器调用的实现:http://www.iteye.com/topic/107785 
+Spring源代码解析（八）：Spring驱动Hibernate的实现:http://www.iteye.com/topic/110801 
+Spring源代码解析（九）：Spring Acegi框架鉴权的实现:http://www.iteye.com/topic/112979 
+Spring源代码解析（十）：Spring Acegi框架授权的实现:http://www.iteye.com/topic/11343
+
+**********************************************************************************************************************
+Spring-mvc包的学习
+
+**********************************************************************************************************************
+linux shell 学习
+
+
+**********************************************************************************************************************
+protobuf 了解学习
+
+Protocol Buffers 是一种轻便高效的结构化数据存储格式，可以用于结构化数据串行化，或者说序列化。
+适合做数据存储或 RPC 数据交换格式。
+可用于通讯协议、数据存储等领域的语言无关、平台无关、可扩展的序列化结构数据格式。
+
+跨语言，自带了一个编译器，protoc，只需要用它进行编译，可以编译成JAVA、python、C++代码，不需要再写任何其他代码，序列化和反序列化接口都有。
+
+json对比：
+优点：跨语言；序列化后数据占用空间比JSON小，JSON有一定的格式，在数据量上还有可以压缩的空间。
+缺点：它以二进制的方式存储，无法直接读取编辑，除非你有 .proto 定义，否则无法直接读出 Protobuffer的任何内容。
+
+thrift对比：
+两者语法类似，都支持版本向后兼容和向前兼容，thrift侧重点是构建跨语言的可伸缩的服务，支持的语言多，同时提供了全套RPC解决方案，
+可以很方便的直接构建服务，不需要做太多其他的工作。 Protobuffer主要是一种序列化机制，在数据序列化上进行性能比较，Protobuffer相对较好。
+
+消息结构：
+Protocol Buffer中的消息都是由一系列的键值对构成的。每个消息的二进制版本都是使用标签号作为key，
+而每一个字段的名字和类型均是在解码的过程中根据目标类型（反序列化后的对象类型）进行配对的。在进行消息编码时，key/value被连接成字节流。
+在解码时，解析器可以直接跳过不识别的字段，这样就可以保证新老版本消息定义在新老程序之间的兼容性。
+
+**********************************************************************************************************************
+http协议：
+    http请求由三部分组成，分别是：请求行、消息报头、请求正文
+    
+请求方法（所有方法全为大写）有多种，各个方法的解释如下：
+GET     请求获取Request-URI所标识的资源
+POST    在Request-URI所标识的资源后附加新的数据
+HEAD    请求获取由Request-URI所标识的资源的响应消息报头
+PUT     请求服务器存储一个资源，并用Request-URI作为其标识
+DELETE  请求服务器删除Request-URI所标识的资源
+TRACE   请求服务器回送收到的请求信息，主要用于测试或诊断
+CONNECT 保留将来使用
+OPTIONS 请求查询服务器的性能，或者查询与资源相关的选项和需求
+
+在接收和解释请求消息后，服务器返回一个HTTP响应消息。
+
+HTTP响应也是由三个部分组成，分别是：状态行、消息报头、响应正文
+1、状态行格式如下：
+HTTP-Version Status-Code Reason-Phrase CRLF
+其中，HTTP-Version表示服务器HTTP协议的版本；Status-Code表示服务器发回的响应状态代码；Reason-Phrase表示状态代码的文本描述。
+状态代码有三位数字组成，第一个数字定义了响应的类别，且有五种可能取值：
+1xx：指示信息--表示请求已接收，继续处理
+2xx：成功--表示请求已被成功接收、理解、接受
+3xx：重定向--要完成请求必须进行更进一步的操作
+4xx：客户端错误--请求有语法错误或请求无法实现
+5xx：服务器端错误--服务器未能实现合法的请求
+常见状态代码、状态描述、说明：
+200 OK      //客户端请求成功
+400 Bad Request  //客户端请求有语法错误，不能被服务器所理解
+401 Unauthorized //请求未经授权，这个状态代码必须和WWW-Authenticate报头域一起使用 
+403 Forbidden  //服务器收到请求，但是拒绝提供服务
+404 Not Found  //请求资源不存在，eg：输入了错误的URL
+500 Internal Server Error //服务器发生不可预期的错误
+503 Server Unavailable  //服务器当前不能处理客户端的请求，一段时间后可能恢复正常
+
+21/tcp FTP 文件传输协议 
+22/tcp SSH 安全登录、文件传送(SCP)和端口重定向 
+23/tcp Telnet 不安全的文本传送 
+25/tcp SMTP Simple Mail Transfer Protocol (E-mail) 
+69/udp TFTP Trivial File Transfer Protocol 
+79/tcp finger Finger 
+80/tcp HTTP 超文本传送协议 (WWW) 
+88/tcp Kerberos Authenticating agent 
+110/tcp POP3 Post Office Protocol (E-mail) 
+113/tcp ident old identification server system 
+119/tcp NNTP used for usenet newsgroups 
+220/tcp IMAP3 
+443/tcp HTTPS used for securely transferring web pages 
+
+
+**********************************************************************************************************************
+
+
+thrift学习 是什么？为什么用？有什么好处？RMI？
+
+**********************************************************************************************************************
+mybatis原理学习
+
+**********************************************************************************************************************
+tomcat、nginx等服务器部署
+
+**********************************************************************************************************************
+mysql数据库知识 优化？分库？分表？
+
+
+**********************************************************************************************************************
+缓存Memcached原理  消息队列机制了解
+
+remote distribute cache 远程分布式缓存
+Memcached并不是将所有大小的数据都放在一起的，而是预先将数据空间划分为一系列slabs，每个slab只负责一定范围内的数据存储.
+Memcached在启动时通过-m指定最大使用内存，但是这个不会一启动就占用，是随着需要逐步分配给各slab的。
+       如果一个新的缓存数据要被存放，memcached首先选择一个合适的slab，然后查看该slab是否还有空闲的chunk，如果有则直接存放进去；如 果没有则要进行申请。
+       slab申请内存时以page为单位，所以在放入第一个数据，无论大小为多少，都会有1M大小的page被分配给该slab。
+       申请到 page后，slab会将这个page的内存按chunk的大小进行切分，这样就变成了一个chunk的数组，在从这个chunk数组中选择一个用于存储 数据
+       
+       
+注意：
+按slab需求分配page，各slab按需使用chunk存储。
+Memcached分配出去的page不会被回收或者重新分配Memcached申请的内存不会被释放slab空闲的chunk不会借给任何其他slab使用。
+  知道了这些以后，就可以理解为什么总内存没有被全部占用的情况下，memcached却出现了丢失缓存数据的问题了
+
+出现这个问题的原因在于memcached默认使用Slab Allocator的方式进行内存分配，该方式不会释放已分配的内存，而是重复使用已分配的内存，
+这就造成了问题中所说的数据丢失，命中下降的问题。解决办法是在Memcached启动时，使用如下方法来增加内存的分配，或是禁用LRU来避免出现该问题。
+
+$ memcached -M -m 1024
+
+“-M”参数表示禁止LRU，“-m”选项是用来指定最大内存大小的。不指定具体数值则使用默认值64MB
+
+-M禁止LRU  --- 最好禁止LRU
+
+该到总结的时候了，从这篇文章里我们可以得到以下几个结论： 
+结论一，memcached得LRU不是全局的，而是针对slab的，可以说是区域性的。 
+结论二，要提高memcached的命中率，预估我们的value大小并且适当的调整内存页大小和增长因子是必须的。 
+结论三，带着问题找答案理解的要比随便看看的效果好得多
+
+要提高memcached的命中率，预估我们的value大小并且适当的调整内存页大小和增长因子是必须的。 要是可以做到把这些相邻的内存碎片合并起来，再次利用，就更好了！可以再次适当减少内存的浪费！
+
+slab由多个page组成 一个page由多个chunk组成
+
+
+memcached丢失数据的解释：
+http://containsoft.blog.163.com/blog/static/365882102012108111459926/
+
+**********************************************************************************************************************
+定时JVM参数
+
+#!/bin/sh
+root_path=$(cd "$(dirname "${0}")"; cd ..; pwd)
+JVM_OPTS='-server
+-Xms512m  初始堆大小
+-Xmx512m  最大堆大小
+-XX:MaxDirectMemorySize=256m 直接内存 直接内存并不是虚拟机运行时数据区的一部分。在NIO中，引入了一种基于通道和缓冲区的I/O方式，它可以使用native函数直接分配堆外内存，然后通过一个存储在java堆中的DirectByteBuffer对象作为这块内存的引用进行操作。
+-XX:PermSize=128m  持久代(perm gen)初始值
+-XX:MaxPermSize=128m  持久代最大值
+-XX:NewSize=256m  年轻代大小
+-XX:MaxNewSize=256m  年轻代最大值
+-XX:+UseParNewGC  设置年轻代为并行收集
+-XX:MaxTenuringThreshold=2  垃圾最大年龄  如果设置为0的话,则年轻代对象不经过Survivor区,直接进入年老代
+-XX:SurvivorRatio=8  Eden区与Survivor区的大小比值   设置为8,则两个Survivor区与一个Eden区的比值为2:8,一个Survivor区占整个年轻代的1/10
+-XX:+UnlockDiagnosticVMOptions  来解锁任何额外的隐藏参数
+-XX:ParGCCardsPerStrideChunk=32768  选项控制GC工作线程的任务粒度，可以帮助不使用补丁而获得最佳性能，这个补丁用来优化新生代垃圾回收的卡表扫描时间。有趣的是新生代GC时间随着老年代空间的增加而延长。将这个选项值设为32678，新生代回收停顿时间降低到平均50ms。此时百分之99.9应用延迟60ms
+-XX:+UseConcMarkSweepGC  年老代为并发收集
+-XX:-CMSParallelRemarkEnabled  为了减少第二次暂停的时间 降低标记停顿 设置并行标记
+-XX:+ParallelRefProcEnabled   应用有大量的引用或者finalizable对象需要处理，指定下面这个选项可以减少垃圾回收的时间:
+-XX:+CMSClassUnloadingEnabled  这个参数表示在使用CMS垃圾回收机制的时候是否启用类卸载功能。默认这个是设置为不启用的
+-XX:CMSInitiatingOccupancyFraction=80  使用cms作为垃圾回收使用80％后开始CMS收集 阈值为80%
+-XX:+UseCMSInitiatingOccupancyOnly  表示只在到达阀值的时候，才进行CMS GC
+-XX:+AlwaysPreTouch  在调用main函数之前，使用所有可用的内存分页。这个选项可以用来测试长时间运行的系统，所有的内存都已被分配。默认这个选项是关闭的，也就是不会使用所有的内存分页。
+-XX:+PrintGCDetails  开启了详细GC日志模式
+-XX:+PrintGCTimeStamps   输出GC的时间戳（以基准时间的形式）
+-XX:+PrintGCDateStamps   输出GC的时间戳（以日期的形式，
+-XX:+PrintTenuringDistribution   输出显示在survivor空间里面有效的对象的岁数情况
+-XX:+PrintGCApplicationStoppedTime   打印垃圾回收期间程序暂停的时间
+-XX:-OmitStackTraceInFastThrow  jdk 1.6开始，默认server模式下开启了这个参数，意为当jvm检测到程序在重复抛一个异常，在执行若干次后会将异常吞掉
+-Xss256K   每个线程的堆栈大小
+
+
+-Dconf.dir=/letv/daemon-timer-task/bin
+-Dtomcat.log=/letv/daemon-timer-task
+-XX:+PrintHeapAtGC
+-Xloggc:/letv/daemon-timer-task/gc.log'
+
+nohup java $JVM_OPTS -Dconf.dir=${root_path}/bin/ -cp ${root_path}/lib/*:${root_path}/bin/ boot.Application >> ${root_path}/nohup.out &
+
+
+api-JVM参数
+-Xms4g 初始堆大小
+-Xmx4g 最大堆大小
+-Xmn2g 年轻代大小
+-Xss256K 每个线程的堆栈大小
+-XX:MaxDirectMemorySize=2048m  直接内存 直接内存并不是虚拟机运行时数据区的一部分。在NIO中，引入了一种基于通道和缓冲区的I/O方式，它可以使用native函数直接分配堆外内存，然后通过一个存储在java堆中的DirectByteBuffer对象作为这块内存的引用进行操作。
+-XX:PermSize=256m  持久代最大值
+-XX:MaxPermSize=256m  持久代最大值
+-XX:+UseParNewGC 选择垃圾收集器为并行收集
+-XX:MaxTenuringThreshold=2 设置垃圾的最大年龄
+-XX:SurvivorRatio=8 设置年轻代中Eden和Survivor的比例
+-XX:ParallelGCThreads=24 设置并行收集的线程数
+-XX:+UnlockDiagnosticVMOptions 
+-XX:ParGCCardsPerStrideChunk=32768  选项控制GC工作线程的任务粒度
+-XX:+UseConcMarkSweepGC  年老代并发收集
+-XX:-CMSParallelRemarkEnabled 
+-XX:+ParallelRefProcEnabled 
+-XX:+CMSClassUnloadingEnabled 
+-XX:CMSInitiatingOccupancyFraction=80  CMS垃圾回收阈值为80%
+-XX:+UseCMSInitiatingOccupancyOnly  表示只在到达阀值的时候，才进行CMS GC
+-XX:+ExplicitGCInvokesConcurrent  加了这个就不会出现显示调用system.gc()
+-Dsun.rmi.dgc.client.gcInterval=14400000  指定rmi调用时gc的时间间隔
+-Dsun.rmi.dgc.server.gcInterval=14400000  指定rmi调用时gc的时间间隔
+-XX:+AlwaysPreTouch 
+-XX:+PrintGCDetails 
+-XX:+PrintGCTimeStamps 
+-XX:+PrintGCDateStamps 
+-XX:+PrintTenuringDistribution 
+-XX:+PrintGCApplicationStoppedTime 
+-XX:-OmitStackTraceInFastThrow 
+-Xloggc:/letv/logs/tomcat/gc.log 
+-Dconf.dir=/letv/app/tomcat-conf/mobile 
+-Dtomcat.server=/letv/app/tomcat-conf/mobile 
+-Dconf_dir=/letv/app/tomcat-conf/mobile 
+-Dtomcat.log=/letv/logs/tomcat 
+-Djava.net.preferIPv4Stack=true 
+-Djava.net.preferIPv4Stack=true 
+-Djava.endorsed.dirs=/usr/local/ops/tomcat/endorsed 
+-classpath /usr/local/ops/tomcat/bin/bootstrap.jar:/usr/local/ops/tomcat/bin/tomcat-juli.jar 
+-Dcatalina.base=/letv/app/tomcat-lead-1 
+-Dcatalina.home=/usr/local/ops/tomcat 
+-Djava.io.tmpdir=/letv/app/tomcat-lead-1/temp org.apache.catalina.startup.Bootstrap start
+
+**********************************************************************************************************************
+强引用：只要对像引用存在，就不会被垃圾回收掉。
+
+软引用：软引用的对象，内存充足时是不会被回收的，只有当内存不够时，才会回收这些对象。在发生内存溢出之前，会把软引用的对象列入到第二次回收中，
+如果回收完成后内存还是不够就会抛出内存溢出异常。常见的安卓默认图片会很多，一次全部加载到内存会占用大量的空间，将这些对象设定为软引用，则在没有
+被使用时被垃圾回收掉，使用的时候则从cache中获取。
+
+弱引用：用来描述非必须对象，只能生存到下一次垃圾收集发送之前。无论内存是否充足，都会回收掉软引用引用的对象。
+
+
+**********************************************************************************************************************
+TCP   HTTP   UDP三者的关系:
+TCP/IP是个协议组，可分为四个层次：网络接口层、网络层、传输层和应用层。
+在网络层有IP协议、ICMP协议、ARP协议、RARP协议和BOOTP协议。
+在传输层中有TCP协议与UDP协议。
+在应用层有FTP、HTTP、TELNET、SMTP、DNS等协议。
+因此，HTTP本身就是一个协议，是从Web服务器传输超文本到本地浏览器的传送协议。
+**********************************************************************************************************************
+http中的get、post介绍
+
+一个HTTP报文由3部分组成，分别是:
+　　(1)、起始行(start line)
+　　(2)、首部(header)
+　　(3)、主体(body)
+　　示例：
+HTTP/1.0 200 OK    //起始行
+Content-type:text/plain    //首部
+Content-length:19            //首部  
+Hi I'm a message!    主体
+
+
+
+GET使用URL或Cookie传参。而POST将数据放在BODY中。
+GET的URL会有长度上的限制，则POST的数据则可以非常大。
+POST比GET安全，因为数据在地址栏上不可见。
+
+GET和POST是HTTP的两个常用方法。
+ 
+什么是HTTP?
+超文本传输协议(HyperText Transfer Protocol -- HTTP)是一个设计来使客户端和服务器顺利进行通讯的协议。
+HTTP在客户端和服务器之间以request-response protocol（请求-回复协议）工作。
+ 
+GET - 从指定的服务器中获取数据
+POST - 提交数据给指定的服务器处理
+ 
+GET方法：
+使用GET方法时，查询字符串（键值对）被附加在URL地址后面一起发送到服务器：
+/test/demo_form.jsp?name1=value1&name2=value2
+特点：
+GET请求能够被缓存
+GET请求会保存在浏览器的浏览记录中
+以GET请求的URL能够保存为浏览器书签
+GET请求有长度限制
+GET请求主要用以获取数据
+POST方法：
+使用POST方法时，查询字符串在POST信息中单独存在，和HTTP请求一起发送到服务器：
+POST /test/demo_form.jsp HTTP/1.1
+Host: w3schools.com
+name1=value1&name2=value2
+特点：
+POST请求不能被缓存下来
+POST请求不会保存在浏览器浏览记录中
+以POST请求的URL无法保存为浏览器书签
+POST请求没有长度限制
+
+PUT：向指定资源位置上传其最新内容。 
+DELETE：请求服务器删除Request-URI所标识的资源。 
+TRACE：回显服务器收到的请求，主要用于测试或诊断。 
+CONNECT：HTTP/1.1协议中预留给能够将连接改为管道方式的代理服务器。
+虽然HTTP的请求方式有8种，但是我们在实际应用中常用的也就是get和post，其他请求方式也都可以通过这两种方式间接的来实现。
+**********************************************************************************************************************
+
+
+
+
+
+
+
+
+
+**********************************************************************************************************************
+阻塞I/O模型：
+        简介：进程会一直阻塞，直到数据拷贝完成
+        
+非阻塞IO模型 
+       简介：非阻塞IO通过进程反复调用IO函数（多次系统调用，并马上返回）；在数据拷贝的过程中，进程是阻塞的；
+
+IO复用模型：
+             简介：主要是select和epoll；对一个IO端口，两次调用，两次返回，比阻塞IO并没有什么优越性；关键是能实现同时对多个IO端口进行监听；
+
+信号驱动IO
+    简介：两次调用，两次返回；
+
+    首先我们允许套接口进行信号驱动I/O,并安装一个信号处理函数，进程继续运行并不阻塞。当数据准备好时，进程会收到一个SIGIO信号，可以在信号处理函数中调用I/O操作函数处理数据。
+
+异步IO模型
+         简介：数据拷贝的时候进程无需阻塞。
+     当一个异步过程调用发出后，调用者不能立刻得到结果。实际处理这个调用的部件在完成后，通过状态、通知和回调来通知调用者的输入输出操作
+
+
+阻塞非阻塞的区别在于是否能去干其它的事情
+同步和异步的区别是同步会一直等到指导得到结果，异步不会立马得到结果，一般通过回调、通知等实现
+
+####模型的流程图绘制
+
+**********************************************************************************************************************
+Volatile修饰的成员变量在每次被线程访问时，都强迫从共享内存中重读该成员变量的值。
+而且，当成员变量发生变化时，强迫线程将变化值回写到共享内存。这样在任何时刻，两个不同的线程总是看到某个成员变量的同一个值。
+
+**********************************************************************************************************************
+**********************************************************************************************************************
+CopyOnWrite容器即写时复制的容器。通俗的理解是当我们往一个容器添加元素的时候，不直接往当前容器添加，
+而是先将当前容器进行Copy，复制出一个新的容器，然后新的容器里添加元素，添加完元素之后，再将原容器的引用指向新的容器。
+这样做的好处是我们可以对CopyOnWrite容器进行并发的读，而不需要加锁，因为当前容器不会添加任何元素。所以CopyOnWrite容器也是一种读写分离的思想，读和写不同的容器。
+
+CopyOnWrite并发容器用于读多写少的并发场景。比如白名单，黑名单，商品类目的访问和更新场景，假如我们有一个搜索网站，
+用户在这个网站的搜索框中，输入关键字搜索内容，但是某些关键字不允许被搜索。
+这些不能被搜索的关键字会被放在一个黑名单当中，黑名单每天晚上更新一次。当用户搜索时，会检查当前关键字在不在黑名单当中，如果在，则提示不能搜索。实现代码如下：
+
+
+
+　代码很简单，但是使用CopyOnWriteMap需要注意两件事情：
+
+　　1. 减少扩容开销。根据实际需要，初始化CopyOnWriteMap的大小，避免写时CopyOnWriteMap扩容的开销。
+
+　　2. 使用批量添加。因为每次添加，容器每次都会进行复制，所以减少添加次数，可以减少容器的复制次数。如使用上面代码里的addBlackList方法。
+
+内存占用问题。因为CopyOnWrite的写时复制机制，所以在进行写操作的时候，内存里会同时驻扎两个对象的内存，旧的对象和新写入的对象（注意:在复制的时候只是复制容器里的引用，只是在写的时候会创建新对象添加到新容器里，而旧容器的对象还在使用，所以有两份对象内存）。如果这些对象占用的内存比较大，比如说200M左右，那么再写入100M数据进去，内存就会占用300M，那么这个时候很有可能造成频繁的Yong GC和Full GC。之前我们系统中使用了一个服务由于每晚使用CopyOnWrite机制更新大对象，造成了每晚15秒的Full GC，应用响应时间也随之变长。
+
+　　针对内存占用问题，可以通过压缩容器中的元素的方法来减少大对象的内存消耗，比如，如果元素全是10进制的数字，可以考虑把它压缩成36进制或64进制。或者不使用CopyOnWrite容器，而使用其他的并发容器，如ConcurrentHashMap。
+
+　　数据一致性问题。CopyOnWrite容器只能保证数据的最终一致性，不能保证数据的实时一致性。所以如果你希望写入的的数据，马上能读到，请不要使用CopyOnWrite容器。
+
+
+**********************************************************************************************************************
+actor模型
+
+模型中的任意对象之间的通信都是基于消息的
+
+
+**********************************************************************************************************************
+服务发现：
+
+服务治理：
+
+netty:
+
+zp:
+
+服务链：
+
+服务分块：
+
+服务优化：
+
+算法：
+
+
+基于netty搭建一套RPC框架：
+1、通过zk注册和发现服务
+2、通过protobuff来编码和解码
+3、通过netty中的nio模型进行传输
+4、传输协议采用二进制协议
+5、调用方式异步调用
+
+
+**********************************************************************************************************************
+jstack监测线程的状态
+可能出现的情况有等待IO、等待锁释放、条件等待，可能产生死锁，热锁
+死锁，Deadlock（重点关注） 
+等待资源，Waiting on condition（重点关注） 
+•  等待获取监视器，Waiting on monitor entry（重点关注） 
+阻塞，Blocked（重点关注） 
+•  执行中，Runnable 
+•  暂停，Suspended 
+•  对象等待中，Object.wait() 或 TIMED_WAITING 
+•  停止，Parked 
+
+
+
+
+阻塞：当一个线程试图获取一个内部的对象锁（非java.util.concurrent库中的锁），而该锁被其他线程持有，则该线程进入阻塞状态。
+等待：当一个线程等待另一个线程通知调度器一个条件时，该线程进入等待状态。例如调用：Object.wait()、Thread.join()以及等待Lock或Condition。
+可以通过代码与JConsole来验证
+
+

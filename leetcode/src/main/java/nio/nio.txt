@@ -1,0 +1,39 @@
+
+
+nio将事件的发起者，事件的监听者、事件的处理者分离开来。
+
+
+http://www.ibm.com/developerworks/cn/education/java/j-nio/j-nio.html
+
+https://yq.aliyun.com/articles/2371
+
+http://rox-xmlrpc.sourceforge.net/niotut/
+
+buffer 的flip方法和clear方法很重要
+flip方法指定它将limit设置为当前 position，它将 position 设置为 0。
+clear方法重设缓冲区。它将 limit 设置为与 capacity 相同。它设置 position 为 0。
+
+buffer只是一个缓冲区，相当于一个缓存，可以往里面写入数据，也可以从中读出数据
+
+从一个缓冲区往另一个缓冲区写数据：
+ while(true) {
+   buffer.clear;
+   int r = fcin.read(buffer);
+   
+   if(r != -1) {
+    break;
+   }
+   
+   buffer.flip;
+   fcout.write(buffer);
+   
+ }
+ 
+ 
+ 锁定文件
+要获取文件的一部分上的锁，您要调用一个打开的 FileChannel 上的 lock() 方法。注意，如果要获取一个排它锁，您必须以写方式打开文件。
+RandomAccessFile raf = new RandomAccessFile( "usefilelocks.txt", "rw" );
+FileChannel fc = raf.getChannel();
+FileLock lock = fc.lock( start, end, false );
+在拥有锁之后，您可以执行需要的任何敏感操作，然后再释放锁：
+lock.release();

@@ -1,0 +1,10 @@
+http://kiwenlau.com/2016/09/11/mongodb-inverted-index/
+
+倒排索引(Inverted Index)，也称为反向索引，维基百科的定义是这样的:
+
+    是一种索引方法，被用来存储在全文搜索下某个单词在一个文档或者一组文档中的存储位置的映射。
+    
+    MapReduce的输入数据与输出数据均为键值对。MapReduce分为两个函数: Map与Reduce。
+Map函数将输入键值<k1, v1>对进行变换，输出中间键值对<k2, v2>。
+MapReduce框架会自动对中间键值对<k2, v2>进行分组，Key相同的键值对会被合并为一个键值对<k2, list(v2)>。
+Reduce函数对<k2, list(v2)>的Value进行合并，生成结果键值对<k2, v3>。

@@ -1,0 +1,602 @@
+
+*************************************
+Futures.addCallBack()的内部执行情况：
+
+// 模拟调取第三方请求
+// 这里使用的是Spring框架提供的AsyncRestTemplate
+AsyncRestTemplate tp = new AsyncRestTemplate();
+// 发送http请求，获取一个org.springframework.util.concurrent.ListenableFuture对象
+org.springframework.util.concurrent.ListenableFuture<ResponseEntity<Object>> response = tp.getForEntity("http://blog.csdn.net/pistolove", Object.class);
+// 注意：此时的对象是spring中的ListenableFuture，需要将其转化为Guava中的ListenableFuture，用到了JdkFutureAdapters这个适配器类
+ListenableFuture<ResponseEntity<Object>> listenInPoolThread = JdkFutureAdapters.listenInPoolThread(response);
+// 对listenInPoolThread增加监听，并在内部类中进行处理，此处用的是FutureCallback类
+Futures.addCallback(listenInPoolThread, new FutureCallback<Object>() {
+    @Override
+    public void onSuccess(Object result) {
+        System.err.println(result.getClass());
+        System.err.printf("success", result);
+    }
+
+    @Override
+    public void onFailure(Throwable t) {
+        System.out.printf("failure");
+    }
+});
+
+//创建一个单实例的线程 接口需要显著的性能开销 提高性能
+  public static Executor directExecutor() {
+    return DirectExecutor.INSTANCE;
+  }
+
+  /** See {@link #directExecutor} for behavioral notes. */
+  private enum DirectExecutor implements Executor {
+    INSTANCE;
+    @Override public void execute(Runnable command) {
+      command.run();
+    }
+  }
+  
+  
+  // 提供回调功能，传入一个ListenableFuture和一个内部类即可完成回调实现
+  public static <V> void addCallback(ListenableFuture<V> future,
+      FutureCallback<? super V> callback) {
+    addCallback(future, callback, directExecutor());
+  }
+  
+  
+  
+//增加回调
+  public static <V> void addCallback(final ListenableFuture<V> future,
+      final FutureCallback<? super V> callback, Executor executor) {
+    Preconditions.checkNotNull(callback);
+    
+    //每一个future进来都会创建一个独立的线程运行
+    Runnable callbackListener = new Runnable() {
+      @Override
+      public void run() {
+        final V value;
+        try {
+          // TODO(user): (Before Guava release), validate that this
+          // is the thing for IE.
+          //这里是真正阻塞的地方，直到获取到请求结果
+          value = getUninterruptibly(future);
+        } catch (ExecutionException e) {
+          callback.onFailure(e.getCause());
+          return;
+        } catch (RuntimeException e) {
+          callback.onFailure(e);
+          return;
+        } catch (Error e) {
+          callback.onFailure(e);
+          return;
+        }
+        //调用callback的onSuccess方法返回结果
+        callback.onSuccess(value);
+      }
+    };
+    
+    //增加监听，其中executor只提供了一个架子的线程池
+    future.addListener(callbackListener, executor);
+  }
+  
+  
+  
+  
+  
+      @Override
+    public void addListener(Runnable listener, Executor exec) {
+    //将监听任务和线程池加入到执行列表中
+      executionList.add(listener, exec);
+
+    //This allows us to only start up a thread waiting on the delegate future when the first listener is added.
+    //When a listener is first added, we run a task that will wait for the delegate to finish, and when it is done will run the listeners.
+      
+      //这允许我们启动一个线程来等待future当第一个监听器被加入的时候
+      //当第一个监听器被加入，我们将启动一个任务等待future完成，一旦当前的future完成后将会执行监听器
+      
+      //判断是否有监听器加入
+      if (hasListeners.compareAndSet(false, true)) {
+      //如果当前的future完成则立即执行监听列表中的监听器,执行完成后返回
+        if (delegate.isDone()) {
+          // If the delegate is already done, run the execution list
+          // immediately on the current thread.
+          //执行监听列表中的监听任务
+          executionList.execute();
+          return;
+        }
+
+        //如果当前的future没有完成，则启动线程池执行其中的任务，阻塞等待直到有一个future完成，然后执行监听器列表中的监听器
+        adapterExecutor.execute(new Runnable() {
+          @Override
+          public void run() {
+            try {
+              /*
+               * Threads from our private pool are never interrupted. Threads
+               * from a user-supplied executor might be, but... what can we do?
+               * This is another reason to return a proper ListenableFuture
+               * instead of using listenInPoolThread.
+               */
+              getUninterruptibly(delegate);
+            } catch (Error e) {
+              throw e;
+            } catch (Throwable e) {
+              // ExecutionException / CancellationException / RuntimeException
+              // The task is done, run the listeners.
+            }
+
+            //执行链表中的任务
+            executionList.execute();
+          }
+        });
+      }
+    }
+  }
+  
+  
+  //将任务放入ExecutionList中
+    public void add(Runnable runnable, Executor executor) {
+    // Fail fast on a null.  We throw NPE here because the contract of
+    // Executor states that it throws NPE on null listener, so we propagate
+    // that contract up into the add method as well.
+    Preconditions.checkNotNull(runnable, "Runnable was null.");
+    Preconditions.checkNotNull(executor, "Executor was null.");
+
+    // Lock while we check state.  We must maintain the lock while adding the
+    // new pair so that another thread can't run the list out from under us.
+    // We only add to the list if we have not yet started execution.
+    //判断是否执行完成，如果没有执行完成，则放入待执行的链表中
+    synchronized (this) {
+      if (!executed) {
+        runnables = new RunnableExecutorPair(runnable, executor, runnables);
+        return;
+      }
+    }
+    // Execute the runnable immediately. Because of scheduling this may end up
+    // getting called before some of the previously added runnables, but we're
+    // OK with that.  If we want to change the contract to guarantee ordering
+    // among runnables we'd have to modify the logic here to allow it.
+    //执行监听
+    executeListener(runnable, executor);
+  }
+
+
+//链表，存放了任务和执行者
+  private static final class RunnableExecutorPair {
+    final Runnable runnable;
+    final Executor executor;
+    @Nullable RunnableExecutorPair next;
+
+    RunnableExecutorPair(Runnable runnable, Executor executor, RunnableExecutorPair next) {
+      this.runnable = runnable;
+      this.executor = executor;
+      this.next = next;
+    }
+  }
+
+
+    //执行监听链表中的任务
+    public void execute() {
+    // Lock while we update our state so the add method above will finish adding
+    // any listeners before we start to run them.
+    //创建临时变量保存列表，并将成员变量置空让垃圾回收
+    RunnableExecutorPair list;
+    synchronized (this) {
+      if (executed) {
+        return;
+      }
+      executed = true;
+      list = runnables;
+      runnables = null;  // allow GC to free listeners even if this stays around for a while.
+    }
+    
+    
+    // If we succeeded then list holds all the runnables we to execute.  The pairs in the stack are
+    // in the opposite order from how they were added so we need to reverse the list to fulfill our
+    // contract.
+    // This is somewhat annoying, but turns out to be very fast in practice.  Alternatively, we 
+    // could drop the contract on the method that enforces this queue like behavior since depending
+    // on it is likely to be a bug anyway.
+    
+    // N.B. All writes to the list and the next pointers must have happened before the above 
+    // synchronized block, so we can iterate the list without the lock held here.
+    
+    //因为先加入的监听任务会在连边的末尾，所以需要将链表翻转
+    RunnableExecutorPair reversedList = null;
+    while (list != null) {
+      RunnableExecutorPair tmp = list;
+      list = list.next;
+      tmp.next = reversedList;
+      reversedList = tmp;
+    }
+    
+    //从链表头中依次取出监听任务执行
+    while (reversedList != null) {
+      executeListener(reversedList.runnable, reversedList.executor);
+      reversedList = reversedList.next;
+    }
+  }
+  
+  
+  //用while阻塞直到获取到结果
+    public static <V> V getUninterruptibly(Future<V> future)
+      throws ExecutionException {
+    boolean interrupted = false;
+    try {
+      while (true) {
+        try {
+          return future.get();
+        } catch (InterruptedException e) {
+          interrupted = true;
+        }
+      }
+    } finally {
+      if (interrupted) {
+        Thread.currentThread().interrupt();
+      }
+    }
+  }
+  
+  
+  //执行监听器，调用线程池的execute方法，这里线程池并没有提供额外的功能，只提供了执行架子，实际上执行的是监听任务runnable的run方法
+  //而在监听任务的run方法中，会阻塞获取请求结果，请求完成后回调，已达到异步执行的效果
+    private static void executeListener(Runnable runnable, Executor executor) {
+    try {
+      executor.execute(runnable);
+    } catch (RuntimeException e) {
+      // Log it and keep going, bad runnable and/or executor.  Don't
+      // punish the other runnables if we're given a bad one.  We only
+      // catch RuntimeException because we want Errors to propagate up.
+      log.log(Level.SEVERE, "RuntimeException while executing runnable "
+          + runnable + " with executor " + executor, e);
+    }
+  }
+
+
+  //使用JdkFutureAdaoter适配Spring中的ListenableFuture达到异步调用的结果
+    在future.get方法中到底阻塞在什么地方呢？
+通过调试发现最后调用的是BasicFuture中的阻塞方法。
+
+
+    FutureAdapter:
+    //这里的get方法会调用BasicFuture中的get方法进行阻塞，直到获取到结果
+    @Override
+    public T get() throws InterruptedException, ExecutionException {
+        return adaptInternal(this.adaptee.get());
+    }
+
+
+    BasicFuture:
+    //在这里会判断当前future是否执行完成，如果没有完成则会等待，一旦执行完成则返回结果。
+   public synchronized T get() throws InterruptedException, ExecutionException {
+        while (!this.completed) {
+            wait();
+        }
+        return getResult();
+    }
+
+    FutureAdapter:
+    //这里通过判断状态是否success，如果success则返回成功，如果new, 则阻塞等待结果直到返回，然后改变状态。
+    @SuppressWarnings("unchecked")
+    final T adaptInternal(S adapteeResult) throws ExecutionException {
+        synchronized (this.mutex) {
+            switch (this.state) {
+                case SUCCESS:
+                    return (T) this.result;
+                case FAILURE:
+                    throw (ExecutionException) this.result;
+                case NEW:
+                    try {
+                        T adapted = adapt(adapteeResult);
+                        this.result = adapted;
+                        this.state = State.SUCCESS;
+                        return adapted;
+                    }
+                    catch (ExecutionException ex) {
+                        this.result = ex;
+                        this.state = State.FAILURE;
+                        throw ex;
+                    }
+                    catch (Throwable ex) {
+                        ExecutionException execEx = new ExecutionException(ex);
+                        this.result = execEx;
+                        this.state = State.FAILURE;
+                        throw execEx;
+                    }
+                default:
+                    throw new IllegalStateException();
+            }
+        }
+    }
+
+
+
+
+  //这个方法判断
+    public boolean completed(final T result) {
+        synchronized(this) {
+            if (this.completed) {
+                return false;
+            }
+            this.completed = true;
+            this.result = result;
+            notifyAll();
+        }
+        if (this.callback != null) {
+            this.callback.completed(result);
+        }
+        return true;
+    }
+
+
+*********************************************
+        
+
+        AbstractMultiworkerIOReactor：   
+        public void run() {
+            try {
+                this.dispatcher.execute(this.eventDispatch);
+            } catch (final Exception ex) {
+                this.exception = ex;
+            }
+        }
+
+
+    BaseIOReactor:
+    public void execute(
+            final IOEventDispatch eventDispatch) throws InterruptedIOException, IOReactorException {
+        Args.notNull(eventDispatch, "Event dispatcher");
+        this.eventDispatch = eventDispatch;
+        execute();
+    }
+
+
+
+
+        AbstractIOReactor:
+        protected void execute() throws InterruptedIOException, IOReactorException {
+        this.status = IOReactorStatus.ACTIVE;
+
+        try {
+            for (;;) {
+
+                final int readyCount;
+                try {
+                    readyCount = this.selector.select(this.selectTimeout);
+                } catch (final InterruptedIOException ex) {
+                    throw ex;
+                } catch (final IOException ex) {
+                    throw new IOReactorException("Unexpected selector failure", ex);
+                }
+
+                if (this.status == IOReactorStatus.SHUT_DOWN) {
+                    // Hard shut down. Exit select loop immediately
+                    break;
+                }
+
+                if (this.status == IOReactorStatus.SHUTTING_DOWN) {
+                    // Graceful shutdown in process
+                    // Try to close things out nicely
+                    closeSessions();
+                    closeNewChannels();
+                }
+
+                // Process selected I/O events
+                if (readyCount > 0) {
+                    processEvents(this.selector.selectedKeys());
+                }
+
+                // Validate active channels
+                validate(this.selector.keys());
+
+                // Process closed sessions
+                processClosedSessions();
+
+                // If active process new channels
+                if (this.status == IOReactorStatus.ACTIVE) {
+                    processNewChannels();
+                }
+
+                // Exit select loop if graceful shutdown has been completed
+                if (this.status.compareTo(IOReactorStatus.ACTIVE) > 0
+                        && this.sessions.isEmpty()) {
+                    break;
+                }
+
+                if (this.interestOpsQueueing) {
+                    // process all pending interestOps() operations
+                    processPendingInterestOps();
+                }
+
+            }
+
+        } catch (final ClosedSelectorException ignore) {
+        } finally {
+            hardShutdown();
+            synchronized (this.statusMutex) {
+                this.statusMutex.notifyAll();
+            }
+        }
+    }
+
+
+
+
+    private void processNewChannels() throws IOReactorException {
+        ChannelEntry entry;
+        while ((entry = this.newChannels.poll()) != null) {
+
+            final SocketChannel channel;
+            final SelectionKey key;
+            try {
+                channel = entry.getChannel();
+                channel.configureBlocking(false);
+                key = channel.register(this.selector, SelectionKey.OP_READ);
+            } catch (final ClosedChannelException ex) {
+                final SessionRequestImpl sessionRequest = entry.getSessionRequest();
+                if (sessionRequest != null) {
+                    sessionRequest.failed(ex);
+                }
+                return;
+
+            } catch (final IOException ex) {
+                throw new IOReactorException("Failure registering channel " +
+                        "with the selector", ex);
+            }
+
+            final SessionClosedCallback sessionClosedCallback = new SessionClosedCallback() {
+
+                public void sessionClosed(final IOSession session) {
+                    queueClosedSession(session);
+                }
+
+            };
+
+            InterestOpsCallback interestOpsCallback = null;
+            if (this.interestOpsQueueing) {
+                interestOpsCallback = new InterestOpsCallback() {
+
+                    public void addInterestOps(final InterestOpEntry entry) {
+                        queueInterestOps(entry);
+                    }
+
+                };
+            }
+
+            final IOSession session;
+            try {
+                session = new IOSessionImpl(key, interestOpsCallback, sessionClosedCallback);
+                int timeout = 0;
+                try {
+                    timeout = channel.socket().getSoTimeout();
+                } catch (final IOException ex) {
+                    // Very unlikely to happen and is not fatal
+                    // as the protocol layer is expected to overwrite
+                    // this value anyways
+                }
+
+                session.setAttribute(IOSession.ATTACHMENT_KEY, entry.getAttachment());
+                session.setSocketTimeout(timeout);
+            } catch (final CancelledKeyException ex) {
+                continue;
+            }
+            try {
+                this.sessions.add(session);
+                final SessionRequestImpl sessionRequest = entry.getSessionRequest();
+                if (sessionRequest != null) {
+                    sessionRequest.completed(session);
+                }
+                key.attach(session);
+                sessionCreated(key, session);
+            } catch (final CancelledKeyException ex) {
+                queueClosedSession(session);
+                key.attach(null);
+            }
+        }
+    }
+
+
+        SessionRequestImpl:
+        public void completed(final IOSession session) {
+        Args.notNull(session, "Session");
+        if (this.completed) {
+            return;
+        }
+        this.completed = true;
+        synchronized (this) {
+            this.session = session;
+            if (this.callback != null) {
+                this.callback.completed(this);
+            }
+            notifyAll();
+        }
+    }
+
+
+        AbstractNIOConnPool:
+        class InternalSessionRequestCallback implements SessionRequestCallback {
+
+        public void completed(final SessionRequest request) {
+            requestCompleted(request);
+        }
+
+
+
+
+AbstractNIOConnPool:
+       protected void requestCompleted(final SessionRequest request) {
+        if (this.isShutDown.get()) {
+            return;
+        }
+        @SuppressWarnings("unchecked")
+        final
+        T route = (T) request.getAttachment();
+        this.lock.lock();
+        try {
+            this.pending.remove(request);
+            final RouteSpecificPool<T, C, E> pool = getPool(route);
+            final IOSession session = request.getSession();
+            try {
+                final C conn = this.connFactory.create(route, session);
+                final E entry = pool.createEntry(request, conn);
+                this.leased.add(entry);
+                pool.completed(request, entry);
+                onLease(entry);
+            } catch (final IOException ex) {
+                pool.failed(request, ex);
+            }
+        } finally {
+            this.lock.unlock();
+        }
+        fireCallbacks();
+    }
+
+
+
+    RouteSpecificPool:
+    public void completed(final SessionRequest request, final E entry) {
+        final BasicFuture<E> future = removeRequest(request);
+        future.completed(entry);
+    }
+
+
+
+
+    BasicFuture:
+    public boolean completed(final T result) {
+        synchronized(this) {
+            if (this.completed) {
+                return false;
+            }
+            this.completed = true;
+            this.result = result;
+            notifyAll();
+        }
+        if (this.callback != null) {
+            this.callback.completed(result);
+        }
+        return true;
+    }
+
+
+
+   PoolingNHttpClientConnectionManager:
+   class InternalPoolEntryCallback implements FutureCallback<CPoolEntry> {
+
+        private final BasicFuture<NHttpClientConnection> future;
+
+        public InternalPoolEntryCallback(
+                final BasicFuture<NHttpClientConnection> future) {
+            super();
+            this.future = future;
+        }
+
+        public void completed(final CPoolEntry entry) {
+            Asserts.check(entry.getConnection() != null, "Pool entry with no connection");
+            if (log.isDebugEnabled()) {
+                log.debug("Connection leased: " + format(entry) + formatStats(entry.getRoute()));
+            }
+            final NHttpClientConnection managedConn = CPoolProxy.newProxy(entry);
+            if (!this.future.completed(managedConn)) {
+                pool.release(entry, true);
+            }
+        }    

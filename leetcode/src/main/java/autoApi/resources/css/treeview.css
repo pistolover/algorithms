@@ -1,0 +1,87 @@
+.treeview, .treeview ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.treeview {
+    padding: 15px;
+}
+
+.treeview ul {
+    background-color: white;
+    margin-top: 4px;
+}
+
+.treeview .hitarea {
+    background: none;
+    height: 16px;
+    width: 16px;
+    float: left;
+    cursor: pointer;
+}
+li {
+    display: list-item;
+    text-align: -webkit-match-parent;
+}
+
+.filetree li {
+    padding: 3px 0 2px 16px;
+}
+
+.treeview .hit {
+    display: block;
+    width: 100%;
+    height: 35px;
+    line-height: 35px;
+    border-bottom: 1px solid #D9D9D9;
+    font-size: 14px;
+    text-indent: 32px;
+    color: #333;
+    cursor: pointer;
+}
+
+.treeview > li:first-of-type .hit {
+    border-top: 1px solid #D9D9D9;
+}
+
+.portal_arrow {
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    border-left-color: #aaa;
+    display: inline-block;
+    margin-left: -12px;
+    font-size: 1px;
+    line-height: 0;
+}
+.collapsable ul {
+    display: block;
+    margin: 3px 15px;
+    padding: 0;
+    list-style: none;
+}
+.collapsable-hitarea > i.portal_arrow {
+    border-top-color: #70ABD5;
+    border-left-color: transparent;
+    margin: 0 6px -3px -18px;
+}
+.collapsable ul a {
+    height: 30px;
+    line-height: 30px;
+    font-size: 12px;
+    border-radius: 3px;
+}
+
+.collapsable a {
+    color: #333;
+    /*display: block;*/
+    text-indent: 32px;
+    text-decoration: none;
+}
+.body{
+    display: none;
+}
+.collapsable .body{
+    display: block;
+}
