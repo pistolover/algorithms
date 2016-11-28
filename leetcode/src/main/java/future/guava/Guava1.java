@@ -49,7 +49,7 @@ public class Guava1 {
 
 		AsyncRestTemplate tp = new AsyncRestTemplate();
 		org.springframework.util.concurrent.ListenableFuture<ResponseEntity<Object>> response = tp
-				.getForEntity("http://blog.csdn.net/pistolove", Object.class);
+				.getForEntity("http://www.baidu.com", Object.class);
 		ListenableFuture<ResponseEntity<Object>> listenInPoolThread = JdkFutureAdapters.listenInPoolThread(response);
 		Futures.addCallback(listenInPoolThread, new FutureCallback<Object>() {
 			@Override
