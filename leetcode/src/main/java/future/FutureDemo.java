@@ -96,8 +96,20 @@ public class FutureDemo<T,V> {
                 // 将实现了callable的任务放入到线程池中，得到一个带有回调机制的ListenableFuture实例，
                 // 通过Futures.addCallback方法对得到的ListenableFuture实例进行监听，一旦得到结果就进入到onSuccess方法中，
                 // 在onSuccess方法中将查询的结果存入到集合中
-                task.setValue(t);
-                ListenableFuture<V> sfuture = service.submit(task);
+                ListenableFuture<V> sfuture = service.submit(new TaskTemplate(t) {
+                    
+                    @Override
+                    public V call() throws Exception {
+                        // TODO Auto-generated method stub
+                        return null;
+                    }
+                    
+                    @Override
+                    T getType() {
+                        // TODO Auto-generated method stub
+                        return null;
+                    }
+                });
                 Futures.addCallback(sfuture, new FutureCallback<V>() {
                     public void onSuccess(V result) {
                         value.add(result);
