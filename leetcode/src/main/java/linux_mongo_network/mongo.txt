@@ -1,0 +1,23 @@
+mongdb查询
+
+查询专辑、视频中某字段不为空且包含给定值的个数：
+db.getCollection('album').find({"playPlatform":{$exists:true}},{"playPlatform":"/420003/"}).count();
+
+查询专辑、视频中某字段为空所对应的key的排序列表：
+db.getCollection('video').find({"playPlatform":null},{"_id":"//"}).sort({"_id":1});
+
+
+db.getCollection('album').find({"coopPlatform":{$ne : ""}},{"coopPlatform":2})
+
+
+
+//返回文档中存在sex键，且值为null的文档  
+db.users.find({sex:{$in:[null],$exists:true }})
+
+
+db.inventory.find({ $and: [ { name: "t1" }, { amount: { $lt：50 } } ] } )
+
+db.fruit.find( { $where: "obj.banana == obj.peach" } )
+
+
+db.users.distinct('last_name'）

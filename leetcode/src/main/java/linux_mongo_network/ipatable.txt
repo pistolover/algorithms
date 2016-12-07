@@ -1,0 +1,60 @@
+./memcached -d -m 200 -u root -l 127.0.0.1
+
+配置Memcache
+vi /etc/sysconfig/memcached
+
+OPTIONS="" 附加参数（填入-l 127.0.0.1代表关闭远程端口）
+
+然后service memcached restart重启即可。
+
+
+
+iptables -F 清空
+iptables -L -n  查看情况
+
+sbin/iptables -I INPUT -p tcp --dport 11211 -j DROP
+/etc/init.d/iptables save
+service iptables restart
+
+开启ip段192.168.1.0/24端的80口
+
+开启ip段211.123.16.123/24端ip段的80口
+
+# iptables -I INPUT -p tcp --dport 80 -j DROP 
+# iptables -I INPUT -s 192.168.1.0/24 -p tcp --dport 80 -j ACCEPT
+# iptables -I INPUT -s 211.123.16.123/24 -p tcp --dport 80 -j ACCEPT
+
+
+
+禁止192.168.0.x网段访问服务器
+iptables -A input -p tcp -s 192.168.0.0/24 -j DROP
+
+允许iptables -A input -p tcp -s 192.168.0.0/24 -j ACCEPT
+
+禁止访问服务器某一端口号iptables -A input -p tcp -s 192.168.0.0/24 --dport (端口号) -DROP 
+
+
+
+1.先备份iptables
+
+# cp /etc/sysconfig/iptables /var/tmp
+
+2.然后保存iptables
+
+# service iptables save
+
+3.重启防火墙
+
+#service iptables restart
+
+
+
+
+
+要封停一个IP，使用下面这条命令：
+
+iptables -I INPUT -s ***.***.***.*** -j DROP
+
+要解封一个IP，使用下面这条命令：
+
+iptables -D INPUT -s ***.***.***.*** -j DROPw

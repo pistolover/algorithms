@@ -1,0 +1,6 @@
+查看tcp请求
+
+tcpdump host 127.0.0.1 -i eth0 -w 1.cap
+
+
+wireshark

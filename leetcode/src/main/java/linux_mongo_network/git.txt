@@ -1,0 +1,5 @@
+git强制命令
+git fetch --all
+git reset --hard origin/master
+git clean -df
+git clean -f
