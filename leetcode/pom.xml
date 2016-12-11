@@ -5,7 +5,19 @@
 	<artifactId>leetcode</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
-
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 	<!-- 配置变量 -->
 	<properties>
@@ -131,22 +143,6 @@
 			<groupId>javax.jms</groupId>
 			<artifactId>javax.jms-api</artifactId>
 			<version>${javax.jms}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-all</artifactId>
-			<version>${activemq}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.rabbitmq</groupId>
-			<artifactId>amqp-client</artifactId>
-			<version>${com.rabbitmq}</version>
-		</dependency>
-		<dependency>
-			<groupId>redis.clients</groupId>
-			<artifactId>jedis</artifactId>
-			<version>${jedis}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
