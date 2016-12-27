@@ -1,5 +1,10 @@
 package headfirst.news.strategy;
 
+/**
+ * 一般用户
+ * @author liqqc
+ *
+ */
 public class GeneralUser implements IStrategy {
 
     @Override

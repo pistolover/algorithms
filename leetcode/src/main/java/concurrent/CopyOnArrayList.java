@@ -32,6 +32,7 @@ public class CopyOnArrayList {
             list.add(13);
             list.add(14);
             list.add(11);
+            list.add(11);
         }
     }
 

@@ -1,5 +1,10 @@
 package headfirst.news.strategy;
 
+/**
+ * 
+ * @author liqqc
+ *
+ */
 public class Context {
 
     private IStrategy iStrategy;
