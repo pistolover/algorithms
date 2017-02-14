@@ -2,6 +2,8 @@ package test.concurrent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,10 +60,19 @@ public final class BatchExec<T,V> {
     
     private static void rejectedExecutionHandler(Runnable task, ListeningExecutorService service) {
         int times = 0;
+        Map<Integer, ThreadPoolExecutor> poolmap = ThreadPoolFactory.getPoolmap();
+        ThreadPoolExecutor threadPoolExecutor = poolmap.get(service.hashCode());
+        int maximumPoolSize = -1;
+        if(threadPoolExecutor!=null){
+             maximumPoolSize = threadPoolExecutor.getMaximumPoolSize();
+        }
+        
         while (true) {
             try {
-                if (times > 5) {
-                    Thread.sleep(1000);
+            	int activeCount = threadPoolExecutor.getActiveCount();
+            	int queueSize = threadPoolExecutor.getQueue().size();
+                if (activeCount >= maximumPoolSize && times>=5) {
+                    Thread.sleep(2000);
                 }
                 service.execute(task);
                 times = 0;

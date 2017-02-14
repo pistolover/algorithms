@@ -1,5 +1,7 @@
 package test.concurrent;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
@@ -15,6 +17,8 @@ public class ThreadPoolFactory {
 
 	private static final int DEFAULT_BLOCKING_SIZE = 500;
 
+	private static final Map<Integer,ThreadPoolExecutor> poolMap = new HashMap<Integer,ThreadPoolExecutor>();
+	
 	public static ListeningExecutorService getCacheService() {
 		return MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
 	}
@@ -40,6 +44,15 @@ public class ThreadPoolFactory {
 		maxSize = maxSize == null ? DEFAULT_POOL_SIZE : maxSize;
 		workQueue = workQueue==null ? new ArrayBlockingQueue<Runnable>(DEFAULT_BLOCKING_SIZE) : workQueue;
 		ThreadPoolExecutor executor = new ThreadPoolExecutor(coreSize, maxSize, 0L, TimeUnit.MILLISECONDS, workQueue, new ThreadPoolQueueFullHanlder());
-		return MoreExecutors.listeningDecorator(executor);
+		ListeningExecutorService listeningDecorator = MoreExecutors.listeningDecorator(executor);
+		if(!poolMap.containsKey(listeningDecorator.hashCode())){
+			poolMap.put(listeningDecorator.hashCode(), executor);
+		}
+		return listeningDecorator;
 	}
+
+	public static Map<Integer, ThreadPoolExecutor> getPoolmap() {
+		return poolMap;
+	}
+	
 }
