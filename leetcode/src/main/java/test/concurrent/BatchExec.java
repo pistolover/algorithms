@@ -19,7 +19,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
  */
 public final class BatchExec<T,V> {
 	private static final Logger logger = LoggerFactory.getLogger(BatchExec.class); 
-	private static ListeningExecutorService defaultService =  ThreadPoolFactory.getFixedService(0);
+	private static ListeningExecutorService defaultService =  ThreadPoolFactory.getCommomExecutorService();
 
     //甯︽湁鍥炶皟鏈哄埗鐨勭嚎绋嬫睜
     public static <T, V> List<V> batchExec(List<T> params, BatchFuture<T, V> batchFuture, ListeningExecutorService service) {
@@ -63,7 +63,7 @@ public final class BatchExec<T,V> {
         Map<Integer, ThreadPoolExecutor> poolmap = ThreadPoolFactory.getPoolmap();
         ThreadPoolExecutor threadPoolExecutor = poolmap.get(service.hashCode());
         int maximumPoolSize = -1;
-        if(threadPoolExecutor!=null){
+        if(threadPoolExecutor != null){
              maximumPoolSize = threadPoolExecutor.getMaximumPoolSize();
         }
         
@@ -71,7 +71,7 @@ public final class BatchExec<T,V> {
             try {
             	int activeCount = threadPoolExecutor.getActiveCount();
             	int queueSize = threadPoolExecutor.getQueue().size();
-                if (activeCount >= maximumPoolSize && times>=5) {
+                if (activeCount >= maximumPoolSize && queueSize >= ThreadPoolFactory.DEFAULT_BLOCKING_SIZE || times >= 5) {
                     Thread.sleep(2000);
                 }
                 service.execute(task);

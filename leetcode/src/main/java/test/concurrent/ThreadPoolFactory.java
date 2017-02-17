@@ -13,9 +13,9 @@ import com.google.common.util.concurrent.MoreExecutors;
 
 public class ThreadPoolFactory {
 
-	private static final int DEFAULT_POOL_SIZE = 20;
+    public static final int DEFAULT_POOL_SIZE = 20;
 
-	private static final int DEFAULT_BLOCKING_SIZE = 500;
+	public static final int DEFAULT_BLOCKING_SIZE = 500;
 
 	private static final Map<Integer,ThreadPoolExecutor> poolMap = new HashMap<Integer,ThreadPoolExecutor>();
 	
