@@ -6,8 +6,6 @@ public class Blocking {
 
     public static void main(String[] args) {
         Vertx vertx = Vertx.vertx();
-        
-        
         vertx.setPeriodic(1000, t -> {
             vertx.executeBlocking(future -> {
               try {

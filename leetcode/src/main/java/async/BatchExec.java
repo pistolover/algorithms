@@ -30,19 +30,15 @@ public class BatchExec<T, V> {
 			return null;
 		}
 
-		final List<V> value = Collections.synchronizedList(new ArrayList<V>());
+		List<V> value = Collections.synchronizedList(new ArrayList<V>());
 
 		try {
 			List<ListenableFuture<V>> futures = new ArrayList<ListenableFuture<V>>();
 			System.err.println("params: " + params.size());
 			ThreadPoolExecutor executor = ThreadPoolUtil.getPoolMap().get(service.hashCode());
+			int maximumPoolSize = executor.getMaximumPoolSize();
 			for (T t : params) {
-				// 将实现了Callable的任务提交到线程池中，得到一个带有回调机制的ListenableFuture实例
-//				System.err.println("hashcode: " + service.hashCode() + "  executor code" + executor.hashCode()
-//						+ " object: " + executor.toString());
-
-				// System.out.println(Thread.currentThread().getName()+":"+"activNum:"+executor.getActiveCount()+">>>>>>"+"maxSize:"+executor.getMaximumPoolSize());
-				while (executor.getActiveCount() >= executor.getMaximumPoolSize()) {
+				while (executor.getActiveCount() >= maximumPoolSize) {
 					System.out.println("线程池满了睡觉---------------");
 					Thread.sleep(500);
 				}
@@ -116,7 +112,7 @@ public class BatchExec<T, V> {
 				// System.out.println(param);
 				return param++;
 			}
-		}, ocrService);
+		}, ThreadPoolUtil.getOcrService());
 		System.out.println("num:" + BatchExec.num);
 		System.out.println("sunum:" + BatchExec.suNum);
 		System.out.println("fanum:" + BatchExec.faNum);

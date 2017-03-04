@@ -15,13 +15,13 @@ import com.google.common.util.concurrent.MoreExecutors;
  */
 public class ThreadPoolUtil {
 
-    private static final int POOL_SIZE = 20;
+    private static final int POOL_SIZE = 500;
 
-    private static final int CORE_SIZE = 30;
+    private static final int CORE_SIZE = 500;
 
-    private static final int MAXI_POOL_SIZE = 100;
+    private static final int MAXI_POOL_SIZE = 500;
 
-    private static final int QUEUE_CAPACITY = 100;
+    private static final int QUEUE_CAPACITY = 2000;
 
     private static final int KEEP_ALIVE_TIME = 0;
 

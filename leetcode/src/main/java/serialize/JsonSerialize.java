@@ -6,8 +6,15 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * @author liqqc
+ */
 public class JsonSerialize {
-    public static void start() throws IOException {
+    public static void main(String[] args) throws IOException {
+        new JsonSerialize().start();
+    }
+
+    public void start() throws IOException {
         User u = new User();
         List<User> friends = new ArrayList<>();
         u.setUserName("张三");
@@ -27,19 +34,15 @@ public class JsonSerialize {
 
         friends.add(f1);
         friends.add(f2);
-        
+
         ObjectMapper mapper = new ObjectMapper();
         Long t1 = System.currentTimeMillis();
-        byte[] writeValueAsBytes= null;
-        for(int i = 0; i<10; i++) {
-            writeValueAsBytes = mapper.writeValueAsBytes(u);
-        }
-        System.out.println("json serialize: " + (System.currentTimeMillis() - t1) + "ms;总大小：" + writeValueAsBytes.length);
-        
-        
+        byte[] writeValueAsBytes = mapper.writeValueAsBytes(u);
+        System.out.println(
+                "json serialize: " + (System.currentTimeMillis() - t1) + "ms; 总大小：" + writeValueAsBytes.length);
         Long t2 = System.currentTimeMillis();
-        User readValue = mapper.readValue(writeValueAsBytes, User.class);
-        System.err.println("json deserialize: " + (System.currentTimeMillis() -t2) + "ms");
-        
+        User user = mapper.readValue(writeValueAsBytes, User.class);
+        System.out.println("json deserialize: " + (System.currentTimeMillis() - t2) + "ms");
+
     }
 }

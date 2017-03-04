@@ -17,6 +17,8 @@ public class T13 {
         DecimalFormat df = new DecimalFormat("0.0");
         System.err.println(df.format(v));
 
+        Integer i =1;
+       System.err.println(null == i);
         
     }
     
