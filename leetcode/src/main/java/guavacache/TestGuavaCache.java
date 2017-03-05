@@ -9,7 +9,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 
-public class TestCache1 {
+public class TestGuavaCache {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         // 缓存接口这里是LoadingCache，LoadingCache在缓存项不存在时可以自动加载缓存
         LoadingCache<Integer, Student> studentCache
@@ -37,7 +37,7 @@ public class TestCache1 {
                         .build(new CacheLoader<Integer, Student>() {
                             @Override
                             public Student load(Integer key) throws Exception {
-                                System.out.println("load student " + key);
+                                System.out.println("loading student " + key);
                                 Student student = new Student();
                                 student.setId(key);
                                 student.setName("name " + key);
@@ -53,7 +53,7 @@ public class TestCache1 {
             TimeUnit.SECONDS.sleep(1);
         }
 
-        System.out.println("cache stats:");
+        System.out.println("cache stats: ");
         // 最后打印缓存的命中率等 情况
         System.out.println(studentCache.stats().toString());
     }

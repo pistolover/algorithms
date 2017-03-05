@@ -11,9 +11,13 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-public class TestCache {
-
-    @Test
+public class GuavaCache {
+    
+    
+    
+    
+    
+@Test
     public void t1() throws ExecutionException {
         final List<Person> list = new ArrayList<Person>(5);
 
