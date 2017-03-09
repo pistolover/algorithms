@@ -4,6 +4,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+/**Collections.SynchronizedCollection()实质是搞了一个对象锁
+ * 
+ * CopyOnWriteArrayList  使用了 ReentrantLock在add方法加锁
+ * 实质是使用copy进行才做，当有些操作时，会加锁，将原数组复制一份，将数值加入，
+ * 然后将新的数组赋值给原数组
+ * 
+ * @author liqqc
+ *
+ */
 public class CopyOnArrayList {
 
     static CopyOnWriteArrayList<Integer> list = new CopyOnWriteArrayList<>();
