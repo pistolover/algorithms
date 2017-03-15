@@ -1,7 +1,11 @@
 package rmi;
 
 import java.io.Serializable;
-
+/**
+ * 
+ * @author liqqc
+ *
+ */
 public class User implements Serializable{
 
     private String name;

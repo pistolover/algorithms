@@ -2,7 +2,11 @@ package rmi;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-
+/**
+ * 
+ * @author liqqc
+ *
+ */
 public class UserServiceImpl extends UnicastRemoteObject implements UserService{
 
     protected UserServiceImpl() throws RemoteException {

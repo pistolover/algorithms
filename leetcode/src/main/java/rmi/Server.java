@@ -5,7 +5,11 @@ import java.rmi.AlreadyBoundException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-
+/**
+ * 
+ * @author liqqc
+ *
+ */
 public class Server {
 
     public static void main(String[] args) {
