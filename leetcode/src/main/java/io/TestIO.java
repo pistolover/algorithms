@@ -18,7 +18,7 @@ public class TestIO {
     @Test
     public void t1() throws IOException {
 
-        BufferedReader reader = new BufferedReader(new FileReader("/Users/liqqc/Desktop/test.txt"));
+        BufferedReader reader = new BufferedReader(new FileReader("/test.txt"));
         String temp = "";
         while ((temp = reader.readLine()) != null) {
             System.err.println(temp);
