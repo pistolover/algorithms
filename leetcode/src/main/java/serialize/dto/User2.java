@@ -1,3 +1,4 @@
+package serialize.dto;
 //package serialize;
 //
 //import java.io.Serializable;

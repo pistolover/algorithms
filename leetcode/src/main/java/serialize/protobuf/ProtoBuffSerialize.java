@@ -1,4 +1,4 @@
-package serialize;
+package serialize.protobuf;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,6 +6,8 @@ import java.util.List;
 
 import com.baidu.bjf.remoting.protobuf.Codec;
 import com.baidu.bjf.remoting.protobuf.ProtobufProxy;
+
+import serialize.dto.User;
 
 /**
  * @author liqqc

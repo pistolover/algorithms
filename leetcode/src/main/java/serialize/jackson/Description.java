@@ -1,4 +1,4 @@
-package objectMapperDeserializer;
+package serialize.jackson;
 
 public class Description {
     private String email;

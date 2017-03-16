@@ -1,4 +1,4 @@
-package serialize;
+package serialize.java;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -7,6 +7,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import serialize.dto.User;
 
 /**
  * @author liqqc

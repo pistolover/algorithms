@@ -2,6 +2,11 @@ package serialize;
 
 import java.io.IOException;
 
+import serialize.fastjson.FastJsonSerialize;
+import serialize.java.JavaSerialize;
+import serialize.json.JsonSerialize;
+import serialize.protobuf.ProtoBuffSerialize;
+
 /**
  * @author liqqc
  */

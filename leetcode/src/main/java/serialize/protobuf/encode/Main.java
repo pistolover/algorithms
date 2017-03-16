@@ -1,4 +1,4 @@
-package com.protobuftest.protobuf.encode;
+package serialize.protobuf.encode;
 
 import java.io.IOException;
 import java.util.Arrays;

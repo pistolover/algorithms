@@ -1,20 +1,22 @@
-package serialize;
+package serialize.json;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import serialize.dto.User;
 
 /**
  * @author liqqc
  */
-public class FastJsonSerialize {
-
-    public static void main(String[] args) {
-        new FastJsonSerialize().start();
+public class JsonSerialize {
+    public static void main(String[] args) throws IOException {
+        new JsonSerialize().start();
     }
 
-    public void start() {
+    public void start() throws IOException {
         User u = new User();
         List<User> friends = new ArrayList<>();
         u.setUserName("张三");
@@ -35,14 +37,14 @@ public class FastJsonSerialize {
         friends.add(f1);
         friends.add(f2);
 
-        // 序列化
+        ObjectMapper mapper = new ObjectMapper();
         Long t1 = System.currentTimeMillis();
-        String text = JSON.toJSONString(u);
+        byte[] writeValueAsBytes = mapper.writeValueAsBytes(u);
         System.out.println(
-                "fastJson serialize: " + (System.currentTimeMillis() - t1) + "ms; 总大小：" + text.getBytes().length);
-        // 反序列化
+                "json serialize: " + (System.currentTimeMillis() - t1) + "ms; 总大小：" + writeValueAsBytes.length);
         Long t2 = System.currentTimeMillis();
-        User user = JSON.parseObject(text, User.class);
-        System.out.println("fastJson serialize: " + (System.currentTimeMillis() - t2) + "ms");
+        User user = mapper.readValue(writeValueAsBytes, User.class);
+        System.out.println("json deserialize: " + (System.currentTimeMillis() - t2) + "ms");
+
     }
 }

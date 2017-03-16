@@ -1,4 +1,4 @@
-package com.protobuftest.protobuf.encode;
+package serialize.protobuf.encode;
 
 import com.baidu.bjf.remoting.protobuf.FieldType;
 import com.baidu.bjf.remoting.protobuf.annotation.Protobuf;

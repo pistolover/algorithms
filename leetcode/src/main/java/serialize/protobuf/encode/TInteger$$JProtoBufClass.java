@@ -1,4 +1,4 @@
-package com.protobuftest.protobuf.encode;
+package serialize.protobuf.encode;
 
 import java.io.IOException;
 
@@ -8,10 +8,10 @@ import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.CodedOutputStream;
 
 public class TInteger$$JProtoBufClass
-        implements com.baidu.bjf.remoting.protobuf.Codec<com.protobuftest.protobuf.encode.TInteger> {
+        implements com.baidu.bjf.remoting.protobuf.Codec<serialize.protobuf.encode.TInteger> {
     private com.google.protobuf.Descriptors.Descriptor descriptor;
 
-    public byte[] encode(com.protobuftest.protobuf.encode.TInteger t) throws IOException {
+    public byte[] encode(serialize.protobuf.encode.TInteger t) throws IOException {
         int size = 0;
         com.google.protobuf.ByteString f_2 = null;
         if (!CodedConstant.isNull(t.getName())) {
@@ -28,8 +28,8 @@ public class TInteger$$JProtoBufClass
         return result;
     }
 
-    public com.protobuftest.protobuf.encode.TInteger decode(byte[] bb) throws IOException {
-        com.protobuftest.protobuf.encode.TInteger ret = new com.protobuftest.protobuf.encode.TInteger();
+    public serialize.protobuf.encode.TInteger decode(byte[] bb) throws IOException {
+        serialize.protobuf.encode.TInteger ret = new serialize.protobuf.encode.TInteger();
         CodedInputStream input = CodedInputStream.newInstance(bb, 0, bb.length);
         try {
             boolean done = false;
@@ -53,7 +53,7 @@ public class TInteger$$JProtoBufClass
         return ret;
     }
 
-    public int size(com.protobuftest.protobuf.encode.TInteger t) throws IOException {
+    public int size(serialize.protobuf.encode.TInteger t) throws IOException {
         int size = 0;
         com.google.protobuf.ByteString f_2 = null;
         if (!CodedConstant.isNull(t.getName())) {
@@ -65,7 +65,7 @@ public class TInteger$$JProtoBufClass
         return size;
     }
 
-    public void writeTo(com.protobuftest.protobuf.encode.TInteger t, CodedOutputStream output) throws IOException {
+    public void writeTo(serialize.protobuf.encode.TInteger t, CodedOutputStream output) throws IOException {
         com.google.protobuf.ByteString f_2 = null;
         if (!CodedConstant.isNull(t.getName())) {
             f_2 = com.google.protobuf.ByteString.copyFromUtf8(t.getName());
@@ -75,8 +75,8 @@ public class TInteger$$JProtoBufClass
         }
     }
 
-    public com.protobuftest.protobuf.encode.TInteger readFrom(CodedInputStream input) throws IOException {
-        com.protobuftest.protobuf.encode.TInteger ret = new com.protobuftest.protobuf.encode.TInteger();
+    public serialize.protobuf.encode.TInteger readFrom(CodedInputStream input) throws IOException {
+        serialize.protobuf.encode.TInteger ret = new serialize.protobuf.encode.TInteger();
         try {
             boolean done = false;
             Codec codec = null;
@@ -104,7 +104,7 @@ public class TInteger$$JProtoBufClass
             return this.descriptor;
         }
         com.google.protobuf.Descriptors.Descriptor descriptor = CodedConstant
-                .getDescriptor(com.protobuftest.protobuf.encode.TInteger.class);
+                .getDescriptor(serialize.protobuf.encode.TInteger.class);
         return (this.descriptor = descriptor);
     }
 }

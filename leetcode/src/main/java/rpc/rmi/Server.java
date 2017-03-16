@@ -1,4 +1,4 @@
-package rmi;
+package rpc.rmi;
 
 import java.net.MalformedURLException;
 import java.rmi.AlreadyBoundException;

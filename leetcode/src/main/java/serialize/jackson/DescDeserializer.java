@@ -1,4 +1,4 @@
-package objectMapperDeserializer;
+package serialize.jackson;
 
 import java.io.IOException;
 
