@@ -9,7 +9,7 @@ public class FileChannelDemo {
     public static void main(String[] args) throws IOException {
         RandomAccessFile randomAccessFile = new RandomAccessFile("/Users/liqqc/Desktop/pid_contains_420003.txt", "rw");
         FileChannel fileChannel = randomAccessFile.getChannel();
-        ByteBuffer byteBuffer = ByteBuffer.allocate(48);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(8);
         int bytesRead = fileChannel.read(byteBuffer);
         while (bytesRead != -1) {
             System.out.println("Read " + bytesRead);
