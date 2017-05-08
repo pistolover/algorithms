@@ -13,8 +13,9 @@ public class NioServer {
     private Selector selector;
 
     public static void main(String[] args) throws IOException {
+    	 System.err.println("start succ...");
         NioServer server = new NioServer();
-        server.initServer(8080);
+        server.initServer(8089);
         server.listener();
         System.err.println("start succ...");
     }
