@@ -86,6 +86,7 @@ public class NIOClient {
      * @throws IOException
      */
     public void read(SelectionKey key) throws IOException {
+        System.err.println("read.......");
     }
 
     /**
