@@ -59,7 +59,7 @@
 		},
 		propagate: function(n,e,inst) {
 			$.ui.plugin.call(this, n, [e, this.ui(inst)]);
-			this.element.triggerHandler(n == "sort" ? n : "sort"+n, [e, this.ui(inst)], this.options[n]);
+			this.element.triggerHandler(n == "algorithms.sort2" ? n : "algorithms.sort2"+n, [e, this.ui(inst)], this.options[n]);
 		},
 		serialize: function(o) {
 			
@@ -280,7 +280,7 @@
 		},
 		mouseStop: function(e) {
 
-			if(this.newPositionAt) this.options.sortIndication.remove.call(this.currentItem, this.newPositionAt); //remove sort indicator
+			if(this.newPositionAt) this.options.sortIndication.remove.call(this.currentItem, this.newPositionAt); //remove algorithms.sort2 indicator
 			this.propagate("stop", e); //Call plugins and trigger callbacks
 
 			//If we are using droppables, inform the manager about the drop
@@ -348,7 +348,7 @@
 			//Post events to containers
 			this.contactContainers(e);
 
-			this.propagate("sort", e); //Call plugins and callbacks
+			this.propagate("algorithms.sort2", e); //Call plugins and callbacks
 			this.helper.css({ left: this.position.current.left+'px', top: this.position.current.top+'px' }); // Stick the helper to the cursor
 			return false;
 			

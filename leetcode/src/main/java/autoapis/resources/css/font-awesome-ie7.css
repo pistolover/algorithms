@@ -673,13 +673,13 @@ a [class*=" icon-"] {
 .icon-columns {
   *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xf0db;');
 }
-.icon-sort {
+.icon-algorithms.sort2 {
   *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xf0dc;');
 }
-.icon-sort-down {
+.icon-algorithms.sort2-down {
   *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xf0dd;');
 }
-.icon-sort-up {
+.icon-algorithms.sort2-up {
   *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xf0de;');
 }
 .icon-envelope {
@@ -1069,22 +1069,22 @@ a [class*=" icon-"] {
 .icon-file-text {
   *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xf15c;');
 }
-.icon-sort-by-alphabet {
+.icon-algorithms.sort2-by-alphabet {
   *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xf15d;');
 }
-.icon-sort-by-alphabet-alt {
+.icon-algorithms.sort2-by-alphabet-alt {
   *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xf15e;');
 }
-.icon-sort-by-attributes {
+.icon-algorithms.sort2-by-attributes {
   *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xf160;');
 }
-.icon-sort-by-attributes-alt {
+.icon-algorithms.sort2-by-attributes-alt {
   *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xf161;');
 }
-.icon-sort-by-order {
+.icon-algorithms.sort2-by-order {
   *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xf162;');
 }
-.icon-sort-by-order-alt {
+.icon-algorithms.sort2-by-order-alt {
   *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '&#xf163;');
 }
 .icon-thumbs-up {

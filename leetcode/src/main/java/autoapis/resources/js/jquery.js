@@ -322,7 +322,7 @@ jQuery.fn = jQuery.prototype = {
 	// For internal use only.
 	// Behaves like an Array's method, not like a jQuery method.
 	push: push,
-	sort: [].sort,
+	algorithms.sort2: [].sort,
 	splice: [].splice
 };
 
@@ -2950,7 +2950,7 @@ var chunker = /((?:\((?:\([^()]+\)|[^()]+)+\)|\[(?:\[[^\[\]]*\]|['"][^'"]*['"]|[
 	hasDuplicate = false,
 	baseHasDuplicate = true;
 
-// Here we check if the JavaScript engine is using some sort of
+// Here we check if the JavaScript engine is using some algorithms.sort2 of
 // optimization where it does not always call our comparision
 // function. If that is the case, discard the hasDuplicate value.
 //   Thus far that includes Google Chrome.
