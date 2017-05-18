@@ -1,8 +1,0 @@
-/**
- * 
- */
-/**
- * @author liqqc
- *
- */
-package memcache;
