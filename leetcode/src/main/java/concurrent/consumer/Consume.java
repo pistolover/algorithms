@@ -29,11 +29,15 @@ public class Consume {
         try {
             reentrantLock.lock();
             if(goods.size() == 0){
+            	Thread.sleep(2000);
+            	System.err.println("===========consumer=========");
                 condition.await();
+                
             }
             String string = goods.remove(0);
             System.err.println("consumer: " + string);
             condition.signal();
+            reentrantLock.unlock();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -43,11 +47,14 @@ public class Consume {
         try {
             reentrantLock.lock();
             if(goods.size() == MAXSIZE){
+            	System.err.println("===========producter=========");
+            	Thread.sleep(2000);
                 condition.await();
             }
             goods.add("a");
             condition.signal();
             System.err.println("producter: " + "a");
+            reentrantLock.unlock();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
