@@ -44,6 +44,7 @@ public class TimeServer {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
+        System.err.println("start...");
     }
 
     private class ChildChannelHandler extends ChannelInitializer<SocketChannel> {
