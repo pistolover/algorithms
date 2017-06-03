@@ -1,0 +1,53 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>SimpleRpcClient</groupId>
+	<artifactId>SimpleRpcClient</artifactId>
+	<parent>
+		<groupId>Rpc</groupId>
+		<artifactId>Rpc</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+
+
+	<properties>
+		<!-- 源文件编码 -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!-- 插件版本 -->
+		<maven-compiler-plugin>2.5.1</maven-compiler-plugin>
+	</properties>
+	<!-- 构建 -->
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin}</version>
+				<!-- JDK版本 -->
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>SimpleRpcLib</groupId>
+			<artifactId>SimpleRpcLib</artifactId>
+			<version>1.0.1-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>3.2.12.RELEASE</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+
+
+</project>
