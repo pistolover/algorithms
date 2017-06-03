@@ -6,6 +6,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
 public class Server extends AbstractVerticle {
+	RedisClientExample createProxy;
 
     private RedisClientExample example;
 

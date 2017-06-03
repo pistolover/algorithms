@@ -12,6 +12,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.redis.RedisClient;
 import io.vertx.redis.RedisOptions;
+import io.vertx.serviceproxy.ProxyHelper;
 
 
 public class RedisClientExample{
@@ -30,7 +31,6 @@ public class RedisClientExample{
         
         System.err.println("start RedisClientExample...");
 	}
-
 	
 
 	public void set(String key, Person p) {
