@@ -2,11 +2,6 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>SimpleRpcLib</groupId>
-	<parent>
-		<groupId>Rpc</groupId>
-		<artifactId>Rpc</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
-	</parent>
 	<artifactId>SimpleRpcLib</artifactId>
 	<version>1.0.1-SNAPSHOT</version>
 
@@ -14,7 +9,7 @@
 	<properties>
 		<!-- 源文件编码 -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
+        <org.springframework>3.2.2.RELEASE</org.springframework>
 		<!-- 插件版本 -->
 		<maven-compiler-plugin>2.5.1</maven-compiler-plugin>
 	</properties>
@@ -144,5 +139,26 @@
 			<artifactId>commons-math3</artifactId>
 			<version>3.6.1</version>
 		</dependency>
+		
+		  <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${org.springframework}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <version>${org.springframework}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${org.springframework}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${org.springframework}</version>
+        </dependency>
 	</dependencies>
 </project>

@@ -18,6 +18,7 @@ public class Main {
 
     @Test
     public void demoTest() throws InterruptedException {
+        System.err.println(Thread.currentThread().getName());
         LogUtils.info(logger, "启动...");
         TimeUnit.HOURS.sleep(5);
     }
