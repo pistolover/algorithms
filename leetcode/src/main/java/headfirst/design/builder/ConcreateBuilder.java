@@ -30,7 +30,7 @@ public class ConcreateBuilder implements IBulider {
 	}
 
 	@Override
-	public void fitup() {
+	public void fitup() {p
 		// TODO Auto-generated method stub
 		System.err.println("last fit up the house...");
 	}
